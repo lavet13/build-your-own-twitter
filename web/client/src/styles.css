@@ -1,0 +1,58 @@
+@layer theme, base, radix-themes, components, utilities;
+
+@import "tailwindcss";
+/*
+*
+* https://tailwindcss.com/docs/preflight#disabling-preflight
+* By default, this is what @import "tailwindcss"; injects:
+*
+* @layer theme, base, components, utilities;
+* @import "tailwindcss/theme.css" layer(theme);
+* @import "tailwindcss/preflight.css" layer(base);
+* @import "tailwindcss/utilities.css" layer(utilities);
+*
+* */
+
+/* https://www.radix-ui.com/themes/docs/theme/color#individual-css-files */
+@import "@radix-ui/themes/tokens/base.css" layer(radix-themes);
+
+@import "@radix-ui/themes/tokens/colors/blue.css" layer(radix-themes); /* accent color */
+@import "@radix-ui/themes/tokens/colors/slate.css" layer(radix-themes); /* gray color */
+@import "@radix-ui/themes/tokens/colors/crimson.css" layer(radix-themes); /* red */
+@import "@radix-ui/themes/tokens/colors/jade.css" layer(radix-themes); /* green */
+@import "@radix-ui/themes/tokens/colors/indigo.css" layer(radix-themes); /* blue */
+
+/* Rest of the CSS */
+@import "@radix-ui/themes/components.css" layer(radix-themes);
+@import "@radix-ui/themes/utilities.css" layer(radix-themes);
+
+@import "./colors.css";
+
+@theme inline {
+  --color-*: initial;
+}
+
+@import "radix-themes-tw/theme.css"; /* <-- import the preset */
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: hsl(var(--border));
+      border-radius: 5px;
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: hsl(var(--border)) transparent;
+    }
+  }
+}
