@@ -3,10 +3,10 @@ import { createRoot } from "react-dom/client";
 import "@/styles.css";
 import { Button, Theme } from "@radix-ui/themes";
 
-const App: FC = () => {
+export const App: FC = () => {
   return (
     <Theme
-      appearance={"dark"}
+      appearance="dark"
       accentColor="blue"
       grayColor="slate"
       panelBackground="translucent"
