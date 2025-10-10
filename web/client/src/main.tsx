@@ -1,11 +1,16 @@
 import { StrictMode, type FC } from "react";
 import { createRoot } from "react-dom/client";
-import "./styles.css";
+import "@/styles.css";
 import { Button, Theme } from "@radix-ui/themes";
 
 const App: FC = () => {
   return (
-    <Theme appearance={"dark"} accentColor="blue" grayColor="slate">
+    <Theme
+      appearance={"dark"}
+      accentColor="blue"
+      grayColor="slate"
+      panelBackground="translucent"
+    >
       <Button>Hello</Button>
     </Theme>
   );
