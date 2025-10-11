@@ -30,6 +30,28 @@
 
 @theme inline {
   --color-*: initial;
+  --container-max-width-2xl: 1400px;
+
+  /* Animations */
+  --animate-collapsible-slide-up: collapsibleSlideUp 150ms ease-out;
+  --animate-collapsible-slide-down: collapsibleSlideDown 150ms ease-out;
+
+  @keyframes collapsibleSlideDown {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+    }
+  }
+  @keyframes collapsibleSlideUp {
+    from {
+      height: var(--radix-collapsible-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
 }
 
 @import "radix-themes-tw/theme.css"; /* <-- import the preset */
@@ -47,12 +69,40 @@
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: hsl(var(--border));
+      background: hsl(var(--gray-6));
       border-radius: 5px;
     }
     * {
       scrollbar-width: thin;
-      scrollbar-color: hsl(var(--border)) transparent;
+      scrollbar-color: hsl(var(--gray-6)) transparent;
     }
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+  }
+
+  @media (min-width: 1400px) {
+    .container {
+      max-width: var(--container-max-width-2xl);
+    }
+  }
+
+  .rt-TextFieldRoot {
+    z-index: 0;
+  }
+
+  .rt-BaseButton:where(.rt-variant-solid):where([data-disabled]) {
+    color: var(--gray-8);
+  }
+
+  .rt-BaseButton:where(.rt-variant-soft, .rt-variant-ghost) {
+    color: var(--accent-11);
   }
 }

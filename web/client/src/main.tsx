@@ -1,20 +1,15 @@
-import { StrictMode, type FC } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@/styles.css";
-import { Button, Theme } from "@radix-ui/themes";
+import { App } from "@/App";
+import type { router } from "@/router";
 
-export const App: FC = () => {
-  return (
-    <Theme
-      appearance="dark"
-      accentColor="blue"
-      grayColor="slate"
-      panelBackground="translucent"
-    >
-      <Button>Hello</Button>
-    </Theme>
-  );
-};
+// Register the router instance for type safety
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

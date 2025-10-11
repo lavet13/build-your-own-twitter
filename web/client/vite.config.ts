@@ -1,9 +1,9 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import topLevelAwait from "vite-plugin-top-level-await";
-import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import path from "path";
+import tailwindcss from "@tailwindcss/vite";
+import topLevelAwait from "vite-plugin-top-level-await";
+import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,14 +13,10 @@ export default defineConfig({
       target: "react",
       autoCodeSplitting: true,
     }),
+    react(),
     topLevelAwait({
       promiseExportName: "__tla",
       promiseImportName: (i) => `__tla_${i}`,
-    }),
-    react({
-      babel: {
-        plugins: [["babel-plugin-react-compiler"]],
-      },
     }),
   ],
   resolve: {
@@ -50,9 +46,44 @@ export default defineConfig({
           ],
 
           // UI components
-          UI: ["@radix-ui/themes"],
+          UI: [
+            "@radix-ui/themes",
+            "vaul",
+            "react-resizable-panels",
+            "@radix-ui/react-navigation-menu",
+          ],
+
+          // Form validation and schema
+          form: ["zod", "@tanstack/react-form"],
+
+          // Styling and class utilities
+          styling: ["class-variance-authority", "tailwind-merge", "clsx"],
+
+          // State management
+          state: ["jotai"],
+
+          animation: ["motion"],
+
+          // UI and interaction
+          icons: ["lucide-react"],
+          "command-ui": ["cmdk"],
+          "number-input": ["react-number-format"],
+          "phone-input": ["react-phone-number-input"],
+
+          misc: [
+            "react-device-detect",
+            "immer",
+            "@tanem/react-nprogress",
+            "sonner",
+            "date-fns",
+            "@date-fns/tz",
+          ],
+
+          // Browser utilities
+          JWT: ["js-cookie", "jose"],
         },
       },
     },
   },
 });
+
