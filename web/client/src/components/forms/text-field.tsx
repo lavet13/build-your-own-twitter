@@ -1,8 +1,9 @@
-import type { ChangeEvent, ComponentProps, FC } from "react";
+import { type ComponentProps, type FC } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { TextField as _TextField } from "@radix-ui/themes";
 import { useFieldAccessibility } from "@/hooks/use-field-accessibility";
 import { Input } from "@/components/ui/input";
+import { composeEventHandlers } from "@/lib/utils";
 
 type TextFieldProps = ComponentProps<typeof Input> & {
   label?: string;
@@ -15,7 +16,6 @@ const TextField: FC<TextFieldProps> = ({
   labelStyles,
   "aria-label": ariaLabelProp,
   ariaLabel,
-  onChange: onChangeProp,
   ...props
 }) => {
   const {
@@ -29,14 +29,6 @@ const TextField: FC<TextFieldProps> = ({
     label,
     ariaLabel: ariaLabelProp || ariaLabel,
   });
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (onChangeProp) {
-      onChangeProp(e);
-    } else {
-      field.handleChange(e.target.value);
-    }
-  };
 
   return (
     <FormItem>
@@ -52,7 +44,9 @@ const TextField: FC<TextFieldProps> = ({
         aria-label={defaultAriaLabel}
         aria-describedby={ariaDescribedBy}
         aria-invalid={!!error}
-        onChange={handleChange}
+        onChange={composeEventHandlers(props.onChange, (e) =>
+          field.handleChange(e.target.value),
+        )}
         {...props}
       />
       <FormMessage id={formMessageId} />

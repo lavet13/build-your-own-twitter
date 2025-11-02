@@ -1,4 +1,10 @@
-import { useState, Fragment, type ComponentProps, type FC } from "react";
+import {
+  useState,
+  Fragment,
+  type ComponentProps,
+  type FC,
+  useEffect,
+} from "react";
 import {
   Button,
   Tooltip,
@@ -29,6 +35,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { isMobile as isMobileDevice, isIOS } from "react-device-detect";
 
 type EntryType = { label: string; value: string | number; name?: string };
 
@@ -87,11 +94,39 @@ const ComboboxGroupField: FC<
   const styles = getComputedStyle(document.documentElement);
   const sm = styles.getPropertyValue("--breakpoint-sm"); // 64rem
   const isMobile = useMediaQuery(`(max-width: ${sm})`);
-  modal = modal || isMobile;
+  modal = modal || isMobileDevice;
 
   const [buttonRef, bounds] = useMeasure<HTMLButtonElement>({
     dependencies: [isMobile],
   });
+
+  const scrollIntoButton = () => {
+    if (!modal) return;
+
+    const headerHeightStr = getComputedStyle(document.documentElement)
+      .getPropertyValue("--header-height")
+      .trim();
+
+    let headerHeightPx;
+
+    if (headerHeightStr.endsWith("rem")) {
+      const remValue = parseFloat(headerHeightStr);
+      const rootFontSize = parseFloat(
+        getComputedStyle(document.documentElement).fontSize,
+      );
+      headerHeightPx = remValue * rootFontSize;
+    } else {
+      headerHeightPx = parseFloat(headerHeightStr);
+    }
+
+    const buttonTop =
+      buttonRef.current!.getBoundingClientRect().top + window.scrollY;
+
+    window.scrollTo({
+      behavior: "smooth",
+      top: buttonTop - headerHeightPx - 30,
+    });
+  };
 
   const renderTrigger = () => {
     return (
@@ -100,7 +135,7 @@ const ComboboxGroupField: FC<
         color="gray"
         ref={buttonRef}
         className={cn(
-          `justify-between [&_svg]:size-4`,
+          `relative justify-between [&_svg]:size-4`,
           `aria-invalid:shadow-[inset_0_0_0_1px_var(--red-8)]`,
           open && "bg-grayA-4",
           className,
@@ -116,11 +151,11 @@ const ComboboxGroupField: FC<
         title={selectedEntry?.label}
         {...props}
       >
-        <div className="flex shrink items-center min-w-0">
+        <div className="flex min-w-0 shrink items-center">
           {!selectedEntry ? (
             <span className="truncate text-sm">{placeholder}</span>
           ) : (
-            <span className="text-grayA-12 font-medium truncate text-sm">
+            <span className="text-grayA-12 truncate text-sm font-medium">
               {selectedEntry.name || selectedEntry.label}
             </span>
           )}
@@ -131,7 +166,7 @@ const ComboboxGroupField: FC<
           <Tooltip content={selectedEntryClearTooltipMessage}>
             <span
               tabIndex={0}
-              className="pointer-events-auto shrink-0 rounded-full [&_svg]:size-5! rt-reset rt-BaseButton rt-r-size-1 rt-variant-ghost rt-IconButton"
+              className="rt-reset rt-BaseButton rt-r-size-1 rt-variant-ghost rt-IconButton pointer-events-auto shrink-0 rounded-full [&_svg]:size-5!"
               aria-label={selectedEntryClearTooltipMessage}
               onClick={(e) => {
                 e.preventDefault();
@@ -151,32 +186,43 @@ const ComboboxGroupField: FC<
             </span>
           </Tooltip>
         )}
-        <ChevronsUpDownIcon className="pointer-events-none ml-auto" />
+        <ChevronsUpDownIcon className="shrink-0 pointer-events-none ml-auto" />
       </Button>
     );
   };
 
-  const renderContent = (props: { shouldFocus?: boolean } = {}) => {
-    const { shouldFocus = false } = props;
+  const [, setSelectedDepartmentRef] = useScrollToSelectedItem();
+
+  const renderContent = (props: { shouldFocusOnMount?: boolean } = {}) => {
+    const { shouldFocusOnMount = false } = props;
 
     return (
       <Command>
         <CommandInput
           {...(modal ? { inputContainer: "bg-gray-2 rounded-t-sm" } : {})}
-          shouldFocus={shouldFocus}
+          shouldFocusOnMount={shouldFocusOnMount}
+          shouldScroll
           clearButton
           clearButtonTooltipMessage={searchClearButtonTooltipMessage}
           placeholder={searchInputPlaceholder}
         />
         <CommandList
+          {...(!modal || isIOS
+            ? {
+                className: cn(
+                  "h-[40dvh] max-h-[300px]",
+                  isIOS && "h-[25dvh] max-h-[150px]",
+                ),
+              }
+            : {})}
           scrollProps={{ type: modal ? "auto" : "always" }}
-          className={cn(modal && `h-auto max-h-fit`)}
         >
-          {isLoading ? (
+          {isLoading && (
             <CommandLoading label={loadingMessage}>
               {loadingMessage}
             </CommandLoading>
-          ) : (
+          )}
+          {!!entries.length && !isLoading && (
             <CommandEmpty>{searchEmptyMessage}</CommandEmpty>
           )}
           {entries.length !== 0 &&
@@ -184,42 +230,52 @@ const ComboboxGroupField: FC<
             entries.map(({ label, items }, valuesIdx, entries) => (
               <Fragment key={valuesIdx}>
                 <CommandGroup heading={label}>
-                  {items.map(({ label, value }) => (
-                    <CommandItem
-                      title={label}
-                      key={value}
-                      value={value as string}
-                      role="option"
-                      aria-selected={value === field.state.value}
-                      onSelect={() => {
-                        field.handleChange(value);
-                        setOpen(false);
-                      }}
-                    >
-                      <span
-                        className={cn(
-                          value === field.state.value && "font-bold",
-                        )}
+                  {items.map(({ label, value }) => {
+                    return (
+                      <CommandItem
+                        title={label}
+                        key={value}
+                        value={value as string}
+                        role="option"
+                        data-selected={value === field.state.value}
+                        data-status={
+                          field.state.value === value ? true : undefined
+                        }
+                        ref={(node) => {
+                          if (value === field.state.value) {
+                            setSelectedDepartmentRef(node);
+                          }
+                        }}
+                        onSelect={() => {
+                          field.handleChange(value);
+                          setOpen(false);
+                          scrollIntoButton();
+                        }}
                       >
-                        {label}
-                      </span>
-                      <CheckIcon
-                        className={cn(
-                          "ml-auto size-4",
-                          value === field.state.value
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
+                        <span
+                          className={cn(
+                            value === field.state.value && "font-bold",
+                          )}
+                        >
+                          {label}
+                        </span>
+                        <CheckIcon
+                          className={cn(
+                            "ml-auto size-4",
+                            value === field.state.value
+                              ? "opacity-100"
+                              : "opacity-0",
+                          )}
+                        />
+                      </CommandItem>
+                    );
+                  })}
                 </CommandGroup>
                 {valuesIdx !== entries.length - 1 && <CommandSeparator />}
               </Fragment>
             ))}
-
           {!entries.length && !isLoading && refetch && (
-            <p className="flex flex-col items-center justify-center py-2 text-center text-sm text-grayA-11">
+            <p className="text-grayA-11 flex flex-col items-center justify-center py-2 text-center text-sm">
               {refetchErrorMessage}
               <Button
                 variant="surface"
@@ -239,51 +295,37 @@ const ComboboxGroupField: FC<
   return (
     <FormItem>
       {label && <FormLabel htmlFor={formItemId}>{label}</FormLabel>}
-      {modal ? (
+      {modal && !isIOS ? (
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerTrigger asChild>{renderTrigger()}</DrawerTrigger>
-          <DrawerContent
-            aria-describedby={undefined}
-            className="rounded-t-lg w-full h-full! lg:max-h-full max-h-[calc(100vh-0.75rem)] top-3 lg:top-0 border border-grayA-6"
-            role="listbox"
-          >
-            <DrawerHandle />
-            <div className="w-full overflow-y-auto flex flex-1">
-              <div className="grow shrink sticky top-0" />
-              <div className="shrink-1 max-w-4xl w-full">
+          <DrawerContent aria-describedby={undefined}>
+            <div className="flex-1 overflow-y-auto rounded-t-lg">
+              <div className="mx-auto max-w-md">
+                <DrawerHandle />
                 <VisuallyHidden>
                   <DrawerTitle>{searchInputPlaceholder}</DrawerTitle>
                 </VisuallyHidden>
-                {renderContent({ shouldFocus: true })}
-              </div>
-              <div
-                className="grow shrink cursor-pointer sticky top-0 hover:bg-secondary/10"
-                onClick={() => setOpen(false)}
-              >
-                <Tooltip content="Закрыть модальное окно">
-                  <button
-                    className="hidden text-red-11 hover:bg-red-3 active:bg-red-4 absolute top-1 left-1 ml-auto pointer-events-auto cursor-pointer shrink-0 lg:inline-flex justify-center items-center size-8 rounded-full [&_svg]:size-4 outline-none focus-visible:ring-red-8 focus-visible:ring-[2px]"
-                    aria-label="Закрыть окно"
-                    type="button"
-                    onClick={() => setOpen(false)}
-                  >
-                    <AccessibleIcon label="Закрыть модальное окно">
-                      <X />
-                    </AccessibleIcon>
-                  </button>
-                </Tooltip>
+                {renderContent({ shouldFocusOnMount: true })}
               </div>
             </div>
           </DrawerContent>
         </Drawer>
       ) : (
-        <Popover.Root open={open} onOpenChange={setOpen}>
+        <Popover.Root
+          open={open}
+          onOpenChange={(open) => {
+            setOpen(open);
+            if (open && isMobileDevice) {
+              scrollIntoButton();
+            }
+          }}
+        >
           <Popover.Trigger>{renderTrigger()}</Popover.Trigger>
           <Popover.Content
             role="listbox"
             sideOffset={2}
             style={{ width: `${bounds?.width}px` }}
-            className={`p-0 rounded-sm`}
+            className="rounded-sm p-0"
           >
             {renderContent()}
           </Popover.Content>
@@ -293,5 +335,72 @@ const ComboboxGroupField: FC<
     </FormItem>
   );
 };
+
+function useScrollToSelectedItem<T extends HTMLElement = HTMLDivElement>() {
+  const [selectedDepartmentRef, setSelectedDepartmentRef] = useState<T | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!selectedDepartmentRef) return;
+
+    const scrollInto = async () => {
+      // First scroll
+      selectedDepartmentRef.scrollIntoView({
+        behavior: "instant",
+        block: "center",
+      });
+
+      // Trigger cmdk's internal hover state
+      const pointerOver = new PointerEvent("pointerover", {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        pointerType: "mouse",
+      });
+
+      const pointerMove = new PointerEvent("pointermove", {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        pointerType: "mouse",
+      });
+
+      selectedDepartmentRef.dispatchEvent(pointerOver);
+      selectedDepartmentRef.dispatchEvent(pointerMove);
+    };
+
+    void scrollInto();
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "data-status"
+        ) {
+          const target = mutation.target as HTMLElement;
+          if (target.getAttribute("data-status") === "true") {
+            void scrollInto();
+            break;
+          }
+        }
+      }
+    });
+
+    const cardList = document.querySelector("[cmdk-list-sizer]");
+    if (cardList) {
+      mutationObserver.observe(cardList, {
+        subtree: true,
+        attributeFilter: ["data-status"],
+      });
+    }
+
+    return () => {
+      mutationObserver.disconnect();
+    };
+  }, [selectedDepartmentRef]);
+
+  return [selectedDepartmentRef, setSelectedDepartmentRef] as const;
+}
 
 export default ComboboxGroupField;

@@ -21,7 +21,7 @@ const NavigationMenuList: FC<
     <NavigationMenuPrimitive.List
       data-slot="navigation-menu-list"
       className={cn(
-        "flex gap-0.5 flex-1 items-center justify-center bg-accentA-2 rounded-xl list-none p-1 py-1.5 m-0",
+        "bg-accentA-3 m-0 flex flex-1 list-none items-center justify-center gap-0.5 rounded-2xl p-1",
         // "[&>li:first-of-type_button]:rounded-s-full [&>li:last-of-type_button]:rounded-e-full",
         className,
       )}
@@ -37,11 +37,11 @@ const NavigationMenuTrigger: FC<
     <NavigationMenuPrimitive.Trigger
       data-slot="navigation-menu-trigger"
       className={cn(
-        "flex flex-1 items-center justify-center gap-[2px] rounded-xl",
-        "py-2.5 px-2.5 whitespace-nowrap overflow-hidden text-ellipsis outline-none select-none",
-        "text-sm text-accent-11 bg-accentA-2 hover:bg-accentA-4 leading-none",
-        "[&[data-state='open']>svg]:scale-110 [&[data-state='open']>svg]:rotate-15 [&_svg]:size-5 [&_svg]:duration-150",
-        "[&[data-state='open']]:bg-accentA-5",
+        "flex flex-1 items-center justify-center gap-[2px] rounded-2xl",
+        "focus-visible:outline-accent-8 relative overflow-hidden px-2.5 py-2.5 text-ellipsis whitespace-nowrap select-none focus-visible:outline-[2px] focus-visible:-outline-offset-1",
+        "text-accent-11 text-sm leading-none",
+        "[&_svg]:size-5 [&_svg]:duration-50 [&[data-state='open']>svg]:scale-110 [&[data-state='open']>svg]:rotate-15",
+        "[&[data-state='open']]:bg-accentA-2",
         className,
       )}
       {...props}
@@ -56,7 +56,7 @@ const NavigationMenuContent: FC<
     <NavigationMenuPrimitive.Content
       data-slot="navigation-menu-content"
       className={cn(
-        "absolute top-0 left-0 w-auto bg-panel-translucent",
+        "bg-panel-translucent absolute top-0 left-0 h-[80dvh] max-h-fit w-auto overflow-y-auto",
         "data-[motion=from-start]:animate-enter-from-left",
         "data-[motion=from-end]:animate-enter-from-right",
         "data-[motion=to-start]:animate-exit-to-left",
@@ -72,14 +72,14 @@ const NavigationMenuViewport: FC<
   ComponentProps<typeof NavigationMenuPrimitive.Viewport>
 > = ({ className, ...props }) => {
   return (
-    <div className="perspective-[2000px] absolute top-full left-0 flex w-full justify-center">
+    <div className="absolute top-full left-0 flex w-full justify-center perspective-[2000px]">
       <NavigationMenuPrimitive.Viewport
         data-slot="navigation-menu-viewport"
         className={cn(
-          "relative origin-[top_center] mt-0 bg-background rounded-md overflow-hidden",
+          "bg-background relative mt-0 origin-[top_center] overflow-hidden rounded-md",
           "shadow-5 h-[var(--radix-navigation-menu-viewport-height)] w-full min-w-[var(--radix-navigation-menu-viewport-width)]",
-          "[transition:width,height,150ms_ease]",
-          "data-[state=open]:animate-scale-in data-[state=closed]:animate-scale-out",
+          "[transition:width,height,50ms_ease]",
+          "data-[state=closed]:animate-scale-out",
           className,
         )}
         {...props}
@@ -103,10 +103,10 @@ const NavigationMenuLink: FC<
     <NavigationMenuPrimitive.Link
       data-slot="navigation-menu-link"
       className={cn(
-        "block no-underline leading-none outline-none select-none",
-        "py-2 px-3 rounded-sm",
-        "data-[status=active]:text-accent-12 text-gray-12 hover:bg-accentA-3 active:bg-accentA-4",
-        "data-[status=active]:bg-accentA-4",
+        "focus-visible:outline-accent-8 block leading-none no-underline select-none focus-visible:outline-[2px] focus-visible:-outline-offset-1",
+        "rounded-sm px-3 py-2",
+        "data-[status=active]:text-accent-11 text-gray-12 hover:bg-accentA-2 active:text-accent-11 active:bg-accentA-3",
+        "data-[status=active]:bg-accentA-3",
         className,
       )}
       {...props}

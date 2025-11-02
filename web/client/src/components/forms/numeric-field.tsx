@@ -1,27 +1,37 @@
-import { useEffect, useRef, type ComponentProps, type FC } from "react";
+import {
+  useRef,
+  type ComponentProps,
+  type FC,
+  type FocusEvent,
+  type InputEvent,
+} from "react";
 import { NumericFormat } from "react-number-format";
 import type { NumericFormatProps } from "react-number-format";
 import { Input } from "@/components/ui/input";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useFieldAccessibility } from "@/hooks/use-field-accessibility";
+import { composeEventHandlers } from "@/lib/utils";
+import { isMobile as isMobileDevice } from "react-device-detect";
 
 const NumericField: FC<
-  Omit<NumericFormatProps, 'size'> & Omit<ComponentProps<typeof Input>, 'type'> & {
-    labelStyles?: string;
-    label?: string;
-    ariaLabel?: string;
-    shouldFocusOnMount?: boolean;
-  }
+  Omit<NumericFormatProps, "size"> &
+    Omit<ComponentProps<typeof Input>, "type"> & {
+      labelStyles?: string;
+      label?: string;
+      ariaLabel?: string;
+      shouldFocusScrollInto?: boolean;
+    }
 > = ({
   label,
   labelStyles,
   "aria-label": ariaLabelProp,
   ariaLabel,
-  shouldFocusOnMount = false,
+  shouldSelect,
+  shouldFocusScrollInto = isMobileDevice,
   size,
+  color,
   ...props
 }) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const {
     field,
     defaultAriaLabel,
@@ -33,27 +43,54 @@ const NumericField: FC<
     label,
     ariaLabel: ariaLabelProp || ariaLabel,
   });
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    if (shouldFocusOnMount) {
-      inputRef.current?.focus();
+  const handleSelectText = (
+    event: FocusEvent<HTMLInputElement> | InputEvent<HTMLInputElement>,
+  ) => {
+    if (shouldSelect) {
+      const input = event.currentTarget;
+
+      setTimeout(() => input.select(), 0);
     }
+    if (shouldFocusScrollInto) {
+      const input = event.currentTarget;
 
-    return () => {
-      if (shouldFocusOnMount) {
-        inputRef.current?.blur();
+      const headerHeightStr = getComputedStyle(document.documentElement)
+        .getPropertyValue("--header-height")
+        .trim();
+
+      let headerHeightPx;
+
+      if (headerHeightStr.endsWith("rem")) {
+        const remValue = parseFloat(headerHeightStr);
+        const rootFontSize = parseFloat(
+          getComputedStyle(document.documentElement).fontSize,
+        );
+        headerHeightPx = remValue * rootFontSize;
+      } else {
+        headerHeightPx = parseFloat(headerHeightStr);
       }
-    };
-  }, [shouldFocusOnMount]);
+
+      const inputTop = input.getBoundingClientRect().top + window.scrollY;
+
+      window.scrollTo({
+        top: inputTop - headerHeightPx - 30,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
     <FormItem>
       {label && (
-        <FormLabel className={labelStyles} htmlFor={formItemId}>
+        <FormLabel color={color} className={labelStyles} htmlFor={formItemId}>
           {label}
         </FormLabel>
       )}
       <NumericFormat
+        color={color}
+        onFocus={composeEventHandlers(props.onFocus, handleSelectText)}
         getInputRef={inputRef}
         aria-label={defaultAriaLabel}
         aria-describedby={ariaDescribedBy}

@@ -7,14 +7,7 @@ import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores([
-    "dist",
-    "node_modules",
-    "**/__generated__/**",
-    ".tanstack",
-    ".git",
-    "public",
-  ]),
+  globalIgnores(["dist", "node_modules", ".tanstack", ".git", "public"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
@@ -46,6 +39,7 @@ export default defineConfig([
       "@typescript-eslint/consistent-type-imports": "off",
       "@typescript-eslint/consistent-type-definitions": "off",
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
 
       // React
       "react/jsx-key": "error",
