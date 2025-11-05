@@ -1,5 +1,5 @@
 {
-  "name": "web-x-client",
+  "name": "client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -49,7 +49,7 @@
     "@graphql-codegen/schema-ast": "^5.0.0",
     "@tanstack/router-plugin": "^1.131.50",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.10.0",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@types/react-relay": "^18.2.1",

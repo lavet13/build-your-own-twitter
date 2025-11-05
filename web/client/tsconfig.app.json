@@ -9,9 +9,6 @@
       "DOM.Iterable"
     ],
     "module": "ESNext",
-    "types": [
-      "vite/client"
-    ],
     "skipLibCheck": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -22,16 +19,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    /* Path Mapping */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
     /* Linting */
     "strict": true,
-    "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
@@ -45,6 +34,19 @@
         "name": "@0no-co/graphqlsp",
         "schema": "./schema.graphql"
       }
+    ],
+    /* Path Mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "js-cookie": [
+        "../../node_modules/@types/js-cookie"
+      ]
+    },
+    "typeRoots": [
+      "../../node_modules/@types"
     ]
   },
   "include": [
