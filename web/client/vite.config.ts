@@ -4,6 +4,8 @@ import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import topLevelAwait from "vite-plugin-top-level-await";
 import react from "@vitejs/plugin-react";
+import relay from "vite-plugin-relay";
+import commonjs from "vite-plugin-commonjs";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -18,6 +20,8 @@ export default defineConfig({
       promiseExportName: "__tla",
       promiseImportName: (i) => `__tla_${i}`,
     }),
+    commonjs(),
+    relay,
   ],
   resolve: {
     alias: {

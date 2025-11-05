@@ -4,6 +4,7 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
+import relay from "eslint-plugin-relay";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
@@ -18,6 +19,7 @@ export default defineConfig([
     ],
     plugins: {
       react: reactPlugin,
+      relay,
     },
     languageOptions: {
       ecmaVersion: 2022,
@@ -50,6 +52,7 @@ export default defineConfig([
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "prefer-const": "warn",
       eqeqeq: ["error", "always"],
+      ...relay.configs["ts-recommended"].rules,
     },
   },
 ]);
