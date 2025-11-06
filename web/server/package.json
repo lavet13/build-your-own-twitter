@@ -7,7 +7,12 @@
     "dev": "tsx watch --clear-screen=false src/index.ts",
     "build": "tsup",
     "preview": "node dist/index.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:start": "npx prisma dev",
+    "db:stop": "npx prisma dev stop",
+    "db:reset": "npx prisma dev rm default && npx prisma dev",
+    "db:migrate": "npx prisma migrate dev",
+    "db:studio": "npx prisma studio"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
@@ -22,11 +27,14 @@
     "@pothos/core": "^4.10.0",
     "@pothos/plugin-prisma": "^4.12.0",
     "@pothos/plugin-relay": "^4.6.2",
-    "@prisma/client": "^6.18.0",
+    "@prisma/client": "^6.19.0",
+    "@prisma/extension-accelerate": "^2.0.2",
     "crossws": "^0.4.1",
+    "dotenv": "^17.2.3",
     "graphql": "^16.12.0",
     "graphql-ws": "^6.0.6",
     "graphql-yoga": "^5.16.1",
+    "prisma": "^6.19.0",
     "srvx": "^0.9.5"
   }
 }

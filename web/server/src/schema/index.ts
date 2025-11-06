@@ -1,4 +1,4 @@
-import { builder } from "./builder.js";
+import { builder } from "@/schema/builder.js";
 
 const schema = builder.toSchema();
 
