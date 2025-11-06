@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "typecheck": "tsx --noEmit"
+    "build": "tsup",
+    "preview": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
     "prisma": "^6.18.0",
+    "terser": "^5.44.1",
+    "tsc-alias": "^1.8.16",
+    "tsup": "^8.5.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
