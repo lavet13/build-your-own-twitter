@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postgres:
     image: bitnami/postgresql:latest
@@ -14,25 +12,8 @@ services:
     networks:
       - twitter_network
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: twitter_clone_pgadmin
-    restart: unless-stopped
-    ports:
-      - "5050:5050"
-    env_file:
-      - ./web/server/.env
-    volumes:
-      - twitter_pgadmin_data:/var/lib/pgadmin
-    networks:
-      - twitter_network
-    depends_on:
-      - postgres
-
 volumes:
   twitter_postgres_data:
-    driver: local
-  twitter_pgadmin_data:
     driver: local
 
 networks:

@@ -8,9 +8,6 @@
     "build": "tsup",
     "preview": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "db:start": "npx prisma dev",
-    "db:stop": "npx prisma dev stop",
-    "db:reset": "npx prisma dev rm default && npx prisma dev",
     "db:migrate": "npx prisma migrate dev",
     "db:studio": "npx prisma studio"
   },
