@@ -1,7 +1,10 @@
+import "../lib/env.js";
 import { createServer } from "node:http";
 import { createYoga } from "graphql-yoga";
 import { schema } from "@/schema/index.js";
 import { createContext } from "@/context.js";
+
+console.log(process.env.DATABASE_URL);
 
 // Create a Yoga instance with a GraphQL schema.
 const yoga = createYoga({ schema, context: createContext });
