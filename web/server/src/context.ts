@@ -9,6 +9,7 @@ export async function createContext(
   _initialContext: YogaInitialContext,
 ): Promise<Context> {
   return {
+    ..._initialContext,
     prisma,
-  } as Context;
+  };
 }

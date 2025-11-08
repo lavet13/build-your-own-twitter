@@ -55,8 +55,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../../generated/client\"\n}\n\ngenerator pothos {\n  provider          = \"prisma-pothos-types\"\n  clientOutput      = \"../../generated/client\"\n  output            = \"../../lib/pothos-prisma-types.ts\"\n  generateDatamodel = \"true\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  name      String?\n  createdAt DateTime @default(now())\n}\n",
-  "inlineSchemaHash": "3aa3199dadc5c71dc0ab69d5bd310f0fe23db40c9a7858d0fc05eca580026f52",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../../generated/client\"\n}\n\ngenerator pothos {\n  provider          = \"prisma-pothos-types\"\n  clientOutput      = \"../generated/client\"\n  output            = \"../../lib/pothos-prisma-types.ts\"\n  generateDatamodel = \"true\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  name      String?\n  createdAt DateTime @default(now())\n}\n",
+  "inlineSchemaHash": "813faf7d982487621a8b80c7c7af0ddada4e11f1e344a85a5bd609d4d9cd45d2",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},

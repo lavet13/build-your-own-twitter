@@ -1,5 +1,5 @@
 import { builder } from "@/schema/builder.js";
 
-const schema = builder.toSchema();
+const builderSchema = builder.toSchema();
 
-export { schema };
+export { builderSchema };
