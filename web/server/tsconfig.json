@@ -8,7 +8,6 @@
       "ES2022"
     ],
     // File Layout
-    "rootDir": "./src",
     "outDir": "./dist",
     // Output Options
     "sourceMap": true,

@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "dev": "tsx watch --clear-screen=false src/server.ts",
     "build": "tsup",
-    "preview": "node dist/index.js",
+    "preview": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:start": "npx prisma dev",
     "db:stop": "npx prisma dev stop",

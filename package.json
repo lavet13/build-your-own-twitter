@@ -14,7 +14,12 @@
     "build:server": "yarn workspace server build",
     "preview": "yarn preview:server && yarn preview:client",
     "preview:client": "yarn workspace client preview",
-    "preview:server": "yarn workspace server preview"
+    "preview:server": "yarn workspace server preview",
+
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:reset": "docker-compose down -v && docker-compose up -d",
+    "docker:logs": "docker-compose logs -f postgres"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

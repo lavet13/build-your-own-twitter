@@ -1,8 +1,20 @@
 import SchemaBuilder from "@pothos/core";
-// import RelayPlugin from "@pothos/plugin-relay";
-// import PrismaPlugin from "@pothos/plugin-prisma";
+import RelayPlugin from "@pothos/plugin-relay";
+import PrismaPlugin from "@pothos/plugin-prisma";
 
-const builder = new SchemaBuilder({});
+import { prisma } from "@/db.js";
+import type PrismaTypes from "@/prisma/pothos-prisma-types.js";
+import type { Context } from "@/context.js";
+
+const builder = new SchemaBuilder<{
+  Context: Context;
+  PrismaTypes: PrismaTypes;
+}>({
+  plugins: [RelayPlugin, PrismaPlugin],
+  prisma: {
+    client: prisma,
+  },
+});
 
 builder.queryType({
   fields: (t) => ({

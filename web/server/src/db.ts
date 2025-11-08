@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { withAccelerate } from "@prisma/extension-accelerate";
+import { PrismaClient } from "../generated/client/client.js";
 
 export const prisma = new PrismaClient({
   log: ["info"],
-}).$extends(withAccelerate());
+});
