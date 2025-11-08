@@ -44,10 +44,7 @@
       "js-cookie": [
         "../../node_modules/@types/js-cookie"
       ]
-    },
-    "typeRoots": [
-      "../../node_modules/@types"
-    ]
+    }
   },
   "include": [
     "src"

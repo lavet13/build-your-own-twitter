@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
-    "prisma": "^6.18.0",
+    "prisma": "^6.19.0",
     "terser": "^5.44.1",
     "tsc-alias": "^1.8.16",
     "tsup": "^8.5.0",

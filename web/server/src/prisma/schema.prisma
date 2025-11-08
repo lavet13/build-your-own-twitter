@@ -4,12 +4,9 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-// Tip: Explore how you can extend the ORM with scalable connection pooling, global caching, and a managed serverless Postgres database.
-// Read: https://pris.ly/cli/beyond-orm
-
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "./generated/prisma"
 }
 
 datasource db {
