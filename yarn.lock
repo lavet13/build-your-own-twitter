@@ -1097,6 +1097,13 @@
   dependencies:
     tslib "^2.8.1"
 
+"@graphql-yoga/plugin-disable-introspection@^2.17.2":
+  version "2.17.2"
+  resolved "https://registry.yarnpkg.com/@graphql-yoga/plugin-disable-introspection/-/plugin-disable-introspection-2.17.2.tgz#169fbb4ea8b49accef942e3f72f7960129b088ee"
+  integrity sha512-Anr5+GfPiJs4fmyhfjAACQ0r6nNJYepnPmNxca8vDt2jhrDXY5GY0FKytWa4YK3qpUvXLS/q3u/VmO5t5mY+EA==
+  dependencies:
+    "@whatwg-node/promise-helpers" "^1.2.4"
+
 "@graphql-yoga/subscription@^5.0.5":
   version "5.0.5"
   resolved "https://registry.yarnpkg.com/@graphql-yoga/subscription/-/subscription-5.0.5.tgz#55e1dc472de866185d7c122e2c534023a331f65c"

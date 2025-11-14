@@ -6,15 +6,15 @@
     "web/client"
   ],
   "scripts": {
-    "dev": "npm-run-all --parallel dev:client dev:server docker:up",
+    "dev": "npm-run-all -p -l dev:* docker:up",
     "dev:client": "yarn workspace client dev",
     "dev:server": "yarn workspace server dev",
 
-    "build": "npm-run-all --parallel build:client build:server",
+    "build": "npm-run-all -p -l build:*",
     "build:client": "yarn workspace client build",
     "build:server": "yarn workspace server build",
 
-    "preview": "npm-run-all --parallel preview:server preview:client",
+    "preview": "npm-run-all -p -l preview:*",
     "preview:client": "yarn workspace client preview",
     "preview:server": "yarn workspace server preview",
 
