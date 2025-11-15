@@ -6,7 +6,7 @@ import topLevelAwait from "vite-plugin-top-level-await";
 import react from "@vitejs/plugin-react";
 import relay from "vite-plugin-relay";
 import commonjs from "vite-plugin-commonjs";
-import codegen from "vite-plugin-graphql-codegen";
+// import codegen from "vite-plugin-graphql-codegen";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -21,11 +21,11 @@ export default defineConfig({
       promiseExportName: "__tla",
       promiseImportName: (i) => `__tla_${i}`,
     }),
-    codegen({
-      runOnStart: true,
-      debug: true,
-      throwOnBuild: false,
-    }),
+    // codegen({
+    //   matchOnSchemas: true,
+    //   debug: true,
+    //   throwOnBuild: false,
+    // }),
     commonjs(),
     relay,
   ],
@@ -39,7 +39,7 @@ export default defineConfig({
     port: 5173,
   },
   build: {
-    minify: "esbuild",
+    minify: "terser",
     cssMinify: "lightningcss",
     // https://vite.dev/config/build-options.html#build-rollupoptions
     rollupOptions: {

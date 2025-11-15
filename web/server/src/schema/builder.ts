@@ -2,9 +2,9 @@ import SchemaBuilder from "@pothos/core";
 import RelayPlugin from "@pothos/plugin-relay";
 import PrismaPlugin from "@pothos/plugin-prisma";
 
-import { prisma } from "@/db.js";
-import type PrismaTypes from "../../lib/pothos-prisma-types.js";
-import type { Context } from "@/context.js";
+import { prisma } from "@/db";
+import type PrismaTypes from "../../lib/pothos-prisma-types";
+import type { Context } from "@/context";
 
 const builder = new SchemaBuilder<{
   Context: Context;

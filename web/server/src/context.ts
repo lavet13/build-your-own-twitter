@@ -1,12 +1,12 @@
 import type { YogaInitialContext } from "graphql-yoga";
-import { prisma } from "@/db.js";
+import { prisma } from "@/db";
 
 export interface Context extends YogaInitialContext {
   prisma: typeof prisma;
 }
 
 export async function createContext(
-  _initialContext: YogaInitialContext,
+  _initialContext: YogaInitialContext
 ): Promise<Context> {
   return {
     ..._initialContext,

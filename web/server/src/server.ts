@@ -1,21 +1,81 @@
-import "@/env.js";
+import "@/env";
 import { createServer } from "node:http";
+import { Socket } from "node:net";
 import { createYoga } from "graphql-yoga";
-import { builderSchema } from "@/schema/index.js";
-import { createContext } from "@/context.js";
+import { builderSchema } from "@/schema";
+import { createContext } from "@/context";
 import { useDisableIntrospection } from "@graphql-yoga/plugin-disable-introspection";
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/use/ws";
 
-// Create a Yoga instance with a GraphQL schema.
 const yoga = createYoga({
   schema: builderSchema,
   context: createContext,
-  plugins: [useDisableIntrospection()],
+  plugins: [process.env.NODE_ENV === "production" && useDisableIntrospection()],
+  graphiql: {
+    // Use WebSockets in GraphiQL
+    subscriptionsProtocol: "WS",
+  },
 });
 
-// Pass it into a server to hook into request handlers.
 const server = createServer(yoga);
 
-// Start the server and you're done!
+const wss = new WebSocketServer({
+  server,
+  path: yoga.graphqlEndpoint,
+});
+
+useServer(
+  {
+    execute: (args: any) => args.execute(args),
+    subscribe: (args: any) => args.subscribe(args),
+    onSubscribe: async (ctx, _id, params) => {
+      const { schema, execute, subscribe, contextFactory, parse, validate } =
+        yoga.getEnveloped({
+          ...ctx,
+          req: ctx.extra.request,
+          socket: ctx.extra.socket,
+          params,
+        });
+
+      const args = {
+        schema,
+        operationName: params.operationName,
+        document: parse(params.query),
+        variableValues: params.variables,
+        contextValue: await contextFactory(),
+        execute,
+        subscribe,
+      };
+
+      const errors = validate(args.schema, args.document);
+      if (errors.length) return errors;
+      return args;
+    },
+  },
+  wss
+);
+
+const sockets = new Set<Socket>();
+
+server.on("connection", (socket) => {
+  sockets.add(socket);
+  server.once("close", () => sockets.delete(socket));
+});
+
 server.listen(4000, () => {
   console.info(`Server is running on http://localhost:4000/graphql`);
+  console.info(`WebSocket is running on ws://localhost:4000/graphql`);
+});
+
+process.on("SIGTERM", () => {
+  console.info("SIGTERM signal received: closing HTTP server");
+  for (const socket of sockets) {
+    socket.destroy();
+    sockets.delete(socket);
+  }
+  server.close(() => {
+    console.info("HTTP server closed");
+    process.exit(0);
+  });
 });
