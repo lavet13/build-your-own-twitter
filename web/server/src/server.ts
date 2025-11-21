@@ -13,7 +13,6 @@ const yoga = createYoga({
   context: createContext,
   plugins: [process.env.NODE_ENV === "production" && useDisableIntrospection()],
   graphiql: {
-    // Use WebSockets in GraphiQL
     subscriptionsProtocol: "WS",
   },
 });
@@ -56,8 +55,8 @@ useServer(
   wss
 );
 
+// Track connections for graceful shutdown
 const sockets = new Set<Socket>();
-
 server.on("connection", (socket) => {
   sockets.add(socket);
   server.once("close", () => sockets.delete(socket));
@@ -65,7 +64,7 @@ server.on("connection", (socket) => {
 
 server.listen(4000, () => {
   console.info(`Server is running on http://localhost:4000/graphql`);
-  console.info(`WebSocket is running on ws://localhost:4000/graphql`);
+  console.info(`WebSocket subscriptions on ws://localhost:4000/graphql`);
 });
 
 process.on("SIGTERM", () => {

@@ -1,4 +1,4 @@
-import { createClient } from "graphql-ws";
+import { createClient as createWSClient } from "graphql-ws";
 import {
   Environment,
   Network,
@@ -14,7 +14,7 @@ import {
 // HTTP endpoint for queries and mutations
 const HTTP_ENDPOINT = "http://localhost:4000/graphql";
 
-const wsClient = createClient({
+const wsClient = createWSClient({
   url: "ws://localhost:4000/graphql",
 });
 
