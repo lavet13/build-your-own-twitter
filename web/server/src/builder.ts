@@ -7,9 +7,17 @@ import type PrismaTypes from "../lib/pothos-prisma-types";
 import { getDatamodel } from "../lib/pothos-prisma-types";
 import type { Context } from "@/context";
 
+import { DateTimeResolver } from "graphql-scalars";
+
 const builder = new SchemaBuilder<{
   Context: Context;
   PrismaTypes: PrismaTypes;
+  Scalars: {
+    DateTime: {
+      Input: Date;
+      Output: Date;
+    };
+  };
 }>({
   plugins: [RelayPlugin, PrismaPlugin],
   prisma: {
@@ -17,6 +25,8 @@ const builder = new SchemaBuilder<{
     dmmf: getDatamodel(),
   },
 });
+
+builder.addScalarType("DateTime", DateTimeResolver);
 
 builder.queryType({
   fields: (t) => ({

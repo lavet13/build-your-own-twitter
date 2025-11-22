@@ -37,6 +37,7 @@
     "dotenv": "^17.2.3",
     "dotenv-expand": "^12.0.3",
     "graphql": "^16.12.0",
+    "graphql-scalars": "^1.25.0",
     "graphql-ws": "^6.0.6",
     "graphql-yoga": "^5.16.1",
     "prisma": "^6.19.0",
