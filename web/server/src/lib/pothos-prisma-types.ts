@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { Prisma, User } from "../generated/client/client.js";
+import type { Prisma, User } from "./prisma/client.js";
 import type { PothosPrismaDatamodel } from "@pothos/plugin-prisma";
 export default interface PrismaTypes {
     User: {

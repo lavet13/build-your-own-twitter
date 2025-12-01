@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "E:\\web-dev\\_X\\web\\server\\generated\\client",
+      "value": "E:\\web-dev\\_X\\web\\server\\src\\lib\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -40,7 +40,7 @@ const config: runtime.GetPrismaClientConfig = {
     "sourceFilePath": "E:\\web-dev\\_X\\web\\server\\src\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
-  "relativePath": "../../src/prisma",
+  "relativePath": "../../prisma",
   "clientVersion": "6.19.0",
   "engineVersion": "2ba551f319ab1df4bc874a89965d8b3641056773",
   "datasourceNames": [
@@ -55,8 +55,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../../generated/client\"\n}\n\ngenerator pothos {\n  provider          = \"prisma-pothos-types\"\n  clientOutput      = \"../generated/client\"\n  output            = \"../../lib/pothos-prisma-types.ts\"\n  generateDatamodel = \"true\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  username  String?\n  createdAt DateTime @default(now())\n}\n",
-  "inlineSchemaHash": "a098d659fc51aa3042e4ccc6b08128edc328fb046dd3131d8cc41b8622154bc9",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../lib/prisma\"\n}\n\ngenerator pothos {\n  provider          = \"prisma-pothos-types\"\n  clientOutput      = \"./prisma\" // relative path from pothos output to prisma client\n  output            = \"../lib/pothos-prisma-types.ts\"\n  generateDatamodel = \"true\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  username  String?\n  createdAt DateTime @default(now())\n}\n",
+  "inlineSchemaHash": "2cc04f5ecf8904e3020eeab3390f608aab9c41f4a07cbdc2ead21bb20a9c4d90",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},

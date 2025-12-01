@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "npm-run-all -p -l dev:* docker:up",
     "dev:client": "yarn workspace client dev",
+    "dev:studio": "yarn workspace server db:studio",
     "dev:server": "yarn workspace server dev",
 
     "build": "npm-run-all -p -l build:*",
@@ -20,6 +21,7 @@
 
     "db:migrate": "yarn workspace server db:migrate",
     "db:studio": "yarn workspace server db:studio",
+    "db:seed": "yarn workspace server db:seed",
 
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",

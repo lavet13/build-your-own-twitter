@@ -1,15 +1,16 @@
-import SchemaBuilder from "@pothos/core";
+import SchemaBuilder from "@pothos/core"; // type ArgBuilder, // type InputFieldBuilder,
 import RelayPlugin from "@pothos/plugin-relay";
 import PrismaPlugin from "@pothos/plugin-prisma";
+import MocksPlugin from "@pothos/plugin-mocks";
 
 import { prisma } from "@/db";
-import type PrismaTypes from "../lib/pothos-prisma-types";
-import { getDatamodel } from "../lib/pothos-prisma-types";
-import type { Context } from "@/context";
+import type PrismaTypes from "@/lib/pothos-prisma-types";
+import { getDatamodel } from "@/lib/pothos-prisma-types";
+import type { Context } from "@/types";
 
 import { DateTimeResolver } from "graphql-scalars";
 
-const builder = new SchemaBuilder<{
+export interface PothosTypes {
   Context: Context;
   PrismaTypes: PrismaTypes;
   Scalars: {
@@ -18,22 +19,34 @@ const builder = new SchemaBuilder<{
       Output: Date;
     };
   };
-}>({
-  plugins: [RelayPlugin, PrismaPlugin],
+}
+
+/*
+ * For building helpers (e.g. input fields, args)
+ * */
+export type TypesWithDefaults =
+  PothosSchemaTypes.ExtendDefaultTypes<PothosTypes>;
+
+/**
+ * Schema Builder Configuration
+ *
+ * This file ONLY configures the builder - it does NOT define any schema types.
+ * All type definitions should be in src/schema/ files.
+ */
+const builder = new SchemaBuilder<PothosTypes>({
+  plugins: [RelayPlugin, PrismaPlugin, MocksPlugin],
   prisma: {
     client: prisma,
     dmmf: getDatamodel(),
+    // warn when not using a query parameter correctly
+    onUnusedQuery: process.env.NODE_ENV === "production" ? null : "warn",
   },
 });
 
 builder.addScalarType("DateTime", DateTimeResolver);
 
-builder.queryType({
-  fields: (t) => ({
-    hello: t.string({
-      resolve: () => "world",
-    }),
-  }),
-});
+builder.queryType({});
+// builder.mutationType({});
+// builder.subscriptionType({});
 
 export { builder };

@@ -1,5 +1,7 @@
 import { createPubSub } from "graphql-yoga";
 
-export type PubSubEvents = {};
+export type PubSubEvents = {
+  COUNT_INCREMENT: [number];
+};
 
-export const pubsub = createPubSub<PubSubEvents>();
+export const pubSub = createPubSub<PubSubEvents>();

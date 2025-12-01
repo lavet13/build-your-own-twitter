@@ -1,5 +1,6 @@
 import { prisma } from "@/db";
-import type { Prisma } from "generated/client/client";
+import type { Prisma } from "@/lib/prisma/client";
+import { parseArgs } from "node:util";
 
 const users: Prisma.UserCreateInput[] = [
   { username: "Alice", email: "alice@prisma.io" },
@@ -10,14 +11,32 @@ const users: Prisma.UserCreateInput[] = [
 ];
 
 async function main() {
-  console.log("--Start seeding(OMAYGOT)--");
-  for (const u of users) {
-    const user = await prisma.user.create({
-      data: u,
-    });
-    console.log(`Created user with id: ${user.id}`);
+  const {
+    values: { environment },
+  } = parseArgs({
+    options: {
+      environment: { type: "string" },
+    },
+  });
+
+  switch (environment) {
+    case "development":
+      console.log("------Start seeding(OMAYGOT)------");
+      for (const u of users) {
+        const user = await prisma.user.create({
+          data: u,
+        });
+        console.log(`Created user with id: ${user.id}`);
+      }
+      console.log("------Seeding finished. Sigh...------");
+      break;
+    case "test":
+      console.log("No testing implemented yet.");
+      break;
+    default:
+      console.log("Did nothing.");
+      break;
   }
-  console.log("--Seeding finished. Sigh...");
 }
 
 main()

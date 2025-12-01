@@ -415,6 +415,11 @@
     "@whatwg-node/promise-helpers" "^1.0.0"
     tslib "^2.5.0"
 
+"@epic-web/invariant@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@epic-web/invariant/-/invariant-1.0.0.tgz#1073e5dee6dd540410784990eb73e4acd25c9813"
+  integrity sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==
+
 "@esbuild/aix-ppc64@0.25.10":
   version "0.25.10"
   resolved "https://registry.yarnpkg.com/@esbuild/aix-ppc64/-/aix-ppc64-0.25.10.tgz#ee6b7163a13528e099ecf562b972f2bcebe0aa97"
@@ -1431,6 +1436,11 @@
   version "4.10.0"
   resolved "https://registry.yarnpkg.com/@pothos/core/-/core-4.10.0.tgz#e31c9092b1e6f480d3600cfbcdb8dd77b64570d6"
   integrity sha512-spC7v6N80GfDKqt6ZSGELLu7EFDZsuQBb/oCqAtDwAe+HIL5T0STjv220IumLeC8lIAMgTaZMa/WnMNKkawbFg==
+
+"@pothos/plugin-mocks@^4.1.2":
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/@pothos/plugin-mocks/-/plugin-mocks-4.1.2.tgz#a683d3c5ad6843af44781e657232f3e8b936ab14"
+  integrity sha512-T3frbnlwT/y+kxjDIGhZMJM30lZfk7G1SF32I1EAB+drbv+TVTY7t4XVJ6nDjL/1TpYdiuo9c7dcjTBs8xyiUQ==
 
 "@pothos/plugin-prisma@^4.12.0":
   version "4.12.0"
@@ -3828,6 +3838,14 @@ country-flag-icons@^1.5.17:
   version "1.5.21"
   resolved "https://registry.yarnpkg.com/country-flag-icons/-/country-flag-icons-1.5.21.tgz#f7502b144c523f5a6ad8d29de780c90a5f9a131e"
   integrity sha512-0KmU4oeiyAM+F+atzK99ghQDQJKxEY3tiDhnRraVFL4o65rZgrmrx7xKi0b+hxcVpcEpuUbu+KCC6TKTZQTDcA==
+
+cross-env@^10.1.0:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-10.1.0.tgz#cfd2a6200df9ed75bfb9cb3d7ce609c13ea21783"
+  integrity sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==
+  dependencies:
+    "@epic-web/invariant" "^1.0.0"
+    cross-spawn "^7.0.6"
 
 cross-fetch@^3.1.5:
   version "3.2.0"

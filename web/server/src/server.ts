@@ -2,14 +2,14 @@ import "@/env";
 import { createServer } from "node:http";
 import { Socket } from "node:net";
 import { createYoga } from "graphql-yoga";
-import { builderSchema } from "@/schema";
-import { createContext } from "@/context";
+import { schema } from "@/schema";
+import { createContext } from "@/types";
 import { useDisableIntrospection } from "@graphql-yoga/plugin-disable-introspection";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
 
 const yoga = createYoga({
-  schema: builderSchema,
+  schema: schema,
   context: createContext,
   plugins: [process.env.NODE_ENV === "production" && useDisableIntrospection()],
   graphiql: {
