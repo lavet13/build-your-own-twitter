@@ -3,50 +3,54 @@ import type { IUserAuthor, IPost } from "@/schema/user/schema";
 
 // Create mock users
 const alice: IUserAuthor = {
-  id: "user-1",
+  id: "1",
   username: "alice",
   posts: [],
 };
 
 const bob: IUserAuthor = {
-  id: "user-2",
+  id: "2",
   username: "bob",
   posts: [],
 };
 
 const charlie: IUserAuthor = {
-  id: "user-3",
+  id: "3",
   username: "charlie",
   posts: [],
 };
 
 // Create mock posts
 const post1: IPost = {
-  id: "post-1",
+  id: "1",
   title: "Getting Started with GraphQL",
   content: "GraphQL is a query language for APIs...",
   author: alice,
+  createdAt: new Date("2024-01-01"),
 };
 
 const post2: IPost = {
-  id: "post-2",
+  id: "2",
   title: "Advanced TypeScript Tips",
   content: "Here are some advanced TypeScript techniques...",
   author: alice,
+  createdAt: new Date("2024-01-01"),
 };
 
 const post3: IPost = {
-  id: "post-3",
+  id: "3",
   title: "Building REST APIs",
   content: "REST is still widely used...",
   author: bob,
+  createdAt: new Date("2024-01-01"),
 };
 
 const post4: IPost = {
-  id: "post-4",
+  id: "4",
   title: "React Best Practices",
   content: "Follow these best practices for React...",
   author: charlie,
+  createdAt: new Date("2024-01-02"),
 };
 
 // Complete the circular references

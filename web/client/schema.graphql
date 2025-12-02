@@ -1,5 +1,17 @@
 schema {
   query: Query
+  mutation: Mutation
+}
+
+input CreatePostInput {
+  authorId: ID!
+  content: String!
+  title: String!
+}
+
+type CreatePostPayload {
+  post: Post
+  success: Boolean
 }
 
 """
@@ -7,13 +19,115 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+input DeletePostInput {
+  id: ID!
+}
+
+type DeletePostPayload {
+  deletedId: ID
+  success: Boolean
+}
+
+type Mutation {
+  createPost(input: CreatePostInput!): CreatePostPayload!
+  deletePost(input: DeletePostInput!): DeletePostPayload
+  updatePost(input: UpdatePostInput!): UpdatePostPayload
+}
+
 interface Node {
   id: ID!
 }
 
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+type Post implements Node {
+  author: UserAuthor
+  content: String
+  createdAt: DateTime
+  id: ID!
+  title: String
+}
+
+type PostsConnection {
+  edges: [PostsEdge]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type PostsEdge {
+  cursor: String!
+  node: Post
+}
+
 type Query {
+  fieldThatAcceptsGlobalID(id: ID!, idList: [ID!]): [ID!]
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
+  post(id: String!): Post
+  posts: [Post!]
+  postsConnection(after: String, before: String, first: Int, last: Int): QueryPostsConnection
+  postsConnectionOffset(after: String, before: String, first: Int, last: Int): QueryPostsConnectionOffsetConnection
+  postsConnectionWithCount(after: String, before: String, first: Int, last: Int): PostsConnection
+  postsCursorConnection(after: String, before: String, first: Int, last: Int): QueryPostsCursorConnection
+  user(id: ID!): UserAuthor
+  users: [UserAuthor!]
+  usersConnection(after: String, before: String, first: Int, last: Int): QueryUsersConnection
+}
+
+type QueryPostsConnection {
+  edges: [QueryPostsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type QueryPostsConnectionEdge {
+  cursor: String!
+  node: Post
+}
+
+type QueryPostsConnectionOffsetConnection {
+  edges: [QueryPostsConnectionOffsetConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type QueryPostsConnectionOffsetConnectionEdge {
+  cursor: String!
+  node: Post
+}
+
+type QueryPostsCursorConnection {
+  edges: [QueryPostsCursorConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type QueryPostsCursorConnectionEdge {
+  cursor: String!
+  node: Post
+}
+
+type QueryUsersConnection {
+  edges: [QueryUsersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type QueryUsersConnectionEdge {
+  cursor: String!
+  node: UserAuthor
+}
+
+input UpdatePostInput {
+  content: String
+  postId: ID!
+  title: String
+}
+
+type UpdatePostPayload {
+  post: Post
+  success: Boolean
 }
 
 type User implements Node {
@@ -22,4 +136,21 @@ type User implements Node {
   email: String!
   id: ID!
   username: String
+}
+
+type UserAuthor implements Node {
+  id: ID!
+  posts: [Post!]
+  postsConnection(after: String, before: String, first: Int, last: Int): UserAuthorPostsConnection
+  username: String
+}
+
+type UserAuthorPostsConnection {
+  edges: [UserAuthorPostsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserAuthorPostsConnectionEdge {
+  cursor: String!
+  node: Post
 }
