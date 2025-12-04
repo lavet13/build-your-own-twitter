@@ -2,8 +2,7 @@
   "name": "monorepo",
   "private": true,
   "workspaces": [
-    "web/server",
-    "web/client"
+    "packages/*"
   ],
   "scripts": {
     "dev": "npm-run-all -p -l dev:* docker:up",

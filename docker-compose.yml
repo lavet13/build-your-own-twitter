@@ -6,7 +6,7 @@ services:
     ports:
       - "5433:5432"
     env_file:
-      - ./web/server/.env
+      - ./packages/server/.env
     volumes:
       - twitter_postgres_data:/bitnami/postgresql
     networks:
