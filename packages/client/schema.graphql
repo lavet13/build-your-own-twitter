@@ -14,6 +14,8 @@ interface Node {
 type Query {
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
+  user(id: ID!): User
+  users: [User!]
 }
 
 type User implements Node {

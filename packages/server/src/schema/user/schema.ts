@@ -11,6 +11,7 @@ export const UserNode = builder.prismaNode("User", {
     displayName: t.string({
       resolve: (user) => user.username || user.email.split("@")[0],
     }),
+    sentMessages: t.relation("sentMessages"),
   }),
 });
 
