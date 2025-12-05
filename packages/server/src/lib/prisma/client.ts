@@ -49,3 +49,8 @@ path.join(process.cwd(), "src/lib/prisma/query_engine-windows.dll.node")
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel

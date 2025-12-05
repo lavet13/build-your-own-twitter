@@ -46,7 +46,7 @@ const builder = new SchemaBuilder<PothosTypes>({
 builder.addScalarType("DateTime", DateTimeResolver);
 
 builder.queryType({});
-builder.mutationType({});
+// builder.mutationType({});
 // builder.subscriptionType({});
 
 export { builder };

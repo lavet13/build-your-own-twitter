@@ -8,7 +8,7 @@ import { builder } from "@/builder";
  */
 
 import "./user";
-import { mockResolvers } from "@/mocks/resolvers";
+// import { mockResolvers } from "@/mocks/resolvers";
 
 /**
  * Build and export the final schema
@@ -17,7 +17,7 @@ import { mockResolvers } from "@/mocks/resolvers";
 const prodSchema = builder.toSchema();
 
 const testSchema = builder.toSchema({
-  mocks: mockResolvers,
+  mocks: undefined,
 });
 
 export const schema =
