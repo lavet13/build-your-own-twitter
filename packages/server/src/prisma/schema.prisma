@@ -22,15 +22,47 @@ datasource db {
 }
 
 model User {
-  id               String    @id @default(cuid())
-  email            String    @unique
-  username         String?
-  createdAt        DateTime  @default(now())
+  id          String    @id @default(cuid())
+  email       String    @unique
+  username    String?
+  displayName String?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
+  profile          Profile?
+
+  followedBy Follow[] @relation("followedBy") // Users who follow me
+  following  Follow[] @relation("following") // Users I follow
 
   @@index([username])
-  @@index([email])
+}
+
+model Follow {
+  followedBy   User   @relation("followedBy", fields: [followedById], references: [id], onDelete: Cascade)
+  followedById String
+
+  followingId String
+  following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([followingId, followedById]) // Can't follow same person twice
+  @@index([followedById])
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Message {
@@ -40,15 +72,19 @@ model Message {
   updatedAt DateTime @updatedAt
 
   senderId String
-  sender   User   @relation("SentMessages", fields: [senderId], references: [id])
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Restrict)
 
   receiverId String
-  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Restrict)
+
+  replyToId String?
+  replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   Message[] @relation("MessageReplies")
 
   isRead Boolean   @default(false)
   readAt DateTime?
 
   @@index([senderId, createdAt])
   @@index([receiverId, createdAt])
-  @@index([createdAt])
+  @@index([receiverId, isRead])
 }

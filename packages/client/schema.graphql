@@ -7,6 +7,16 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+type Message implements Node {
+  content: String
+  createdAt: DateTime
+  id: ID!
+  isRead: Boolean
+  readAt: DateTime
+  receiver: User
+  sender: User
+}
+
 interface Node {
   id: ID!
 }
@@ -23,5 +33,7 @@ type User implements Node {
   displayName: String
   email: String!
   id: ID!
+  receivedMessages: [Message!]
+  sentMessages(limit: Int = 20, unreadOnly: Boolean): [Message!]
   username: String
 }

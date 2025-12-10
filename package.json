@@ -19,6 +19,7 @@
     "preview:server": "yarn workspace server preview",
 
     "db:migrate": "yarn workspace server db:migrate",
+    "db:reset": "yarn workspace server db:reset",
     "db:studio": "yarn workspace server db:studio",
     "db:seed": "yarn workspace server db:seed",
 
