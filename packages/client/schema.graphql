@@ -1,5 +1,12 @@
 schema {
   query: Query
+  mutation: Mutation
+}
+
+type CreateUserResult {
+  message: String
+  success: Boolean
+  user: User
 }
 
 """
@@ -7,33 +14,97 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+type Follow implements Node {
+  createdAt: DateTime
+  """The user being followed"""
+  followedBy: User
+  """ID of the user being followed"""
+  followedById: ID
+  """The user who is following"""
+  following: User
+  followingDuration: String
+  """ID of the user who is following"""
+  followingId: ID
+  id: ID!
+  isMutual: Boolean
+}
+
 type Message implements Node {
   content: String
   createdAt: DateTime
   id: ID!
   isRead: Boolean
   readAt: DateTime
-  receiver: User
-  sender: User
+  receiver: User!
+  recentReply(after: DateTime!): String
+  replies: [Message!]
+  replyTo: Message
+  sender: User!
+  senderDisplayName: String
+  senderInfo(includeEmail: Boolean = false): String
+}
+
+type Mutation {
+  createUser(displayName: String, email: String!, username: String): CreateUserResult
+  sendMessage(content: String!, receiverId: ID!, replyToId: ID, senderId: ID!): SendMessageResult
 }
 
 interface Node {
   id: ID!
 }
 
+type Profile implements Node {
+  avatar: String
+  createdAt: DateTime
+  id: ID!
+  updatedAt: DateTime
+}
+
 type Query {
+  message(id: String!): Message
+  messages: [Message!]
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
   user(id: ID!): User
   users: [User!]
 }
 
+type SendMessageResult {
+  error: String
+  message: Message
+  success: Boolean
+}
+
 type User implements Node {
+  advancedMessages(after: DateTime, before: DateTime, hasReplies: Boolean, read: Boolean, skip: Int = 0, sortBy: String = "createdAt", sortOrder: String = "desc", take: Int = 20): [Message!]
+  avatarUrl: String
   createdAt: DateTime
   displayName: String
   email: String!
+  """Total number of followers"""
+  followerCount: Int!
+  """Users who follow this user"""
+  followers: [User!]
+  """Users this user follows"""
+  following: [User!]
+  """Total number of users being followed"""
+  followingCount: Int!
+  hasAvatar: Boolean
   id: ID!
+  isFollowed(userId: ID!): Boolean
+  isFollowing(userId: ID!): Boolean
+  lastMessagePreview: String
+  messages(limit: Int = 10, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): [Message!]
+  mutualFollowers: [User!]
+  name: String
+  profile: Profile
   receivedMessages: [Message!]
-  sentMessages(limit: Int = 20, unreadOnly: Boolean): [Message!]
+  recentMessages: [Message!]
+  repliedMessageCount: Int!
+  sentMessages: [Message!]
+  todayMessageCount: Int!
+  totalMessageCount: Int!
+  unreadCount: Int
+  unreadMessageCount: Int!
   username: String
 }

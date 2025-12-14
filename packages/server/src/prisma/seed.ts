@@ -73,7 +73,7 @@ async function main() {
         await prisma.profile.create({
           data: {
             userId: user.id,
-            avatar: `https://avatar.iran.liara.run/username?username=${user.displayName}`,
+            avatar: `https://avatar.iran.liara.run/username?username=${user.username?.toLowerCase()}`,
           },
         });
         console.log(`Created profile for ${user.username}`);
