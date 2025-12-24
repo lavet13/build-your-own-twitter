@@ -29,6 +29,12 @@ type Follow implements Node {
   isMutual: Boolean
 }
 
+type FollowResult {
+  follow: Follow
+  message: String
+  success: Boolean
+}
+
 type Message implements Node {
   content: String
   createdAt: DateTime
@@ -46,11 +52,30 @@ type Message implements Node {
 
 type Mutation {
   createUser(displayName: String, email: String!, username: String): CreateUserResult
+  followUser(
+    """Current User"""
+    currentUserId: ID!
+    """User to follow"""
+    userIdToFollow: ID!
+  ): FollowResult
   sendMessage(content: String!, receiverId: ID!, replyToId: ID, senderId: ID!): SendMessageResult
+  unfollowUser(
+    """Current User"""
+    currentUserId: ID!
+    """User to follow"""
+    userIdToUnfollow: ID!
+  ): FollowResult
 }
 
 interface Node {
   id: ID!
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
 }
 
 type Profile implements Node {
@@ -77,6 +102,7 @@ type SendMessageResult {
 
 type User implements Node {
   advancedMessages(after: DateTime, before: DateTime, hasReplies: Boolean, read: Boolean, skip: Int = 0, sortBy: String = "createdAt", sortOrder: String = "desc", take: Int = 20): [Message!]
+  advancedMessagesConnection(after: String, before: String, first: Int, hasReplies: Boolean, last: Int, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): UserAdvancedMessagesConnection
   avatarUrl: String
   createdAt: DateTime
   displayName: String
@@ -85,20 +111,25 @@ type User implements Node {
   followerCount: Int!
   """Users who follow this user"""
   followers: [User!]
+  followersConnection(after: String, before: String, first: Int, last: Int): UserFollowersConnection
   """Users this user follows"""
   following: [User!]
+  followingConnection(after: String, before: String, first: Int, last: Int, sortByRecent: Boolean = true, verified: Boolean): UserFollowingConnection
   """Total number of users being followed"""
   followingCount: Int!
+  followingTest: [Follow!]
   hasAvatar: Boolean
   id: ID!
   isFollowed(userId: ID!): Boolean
   isFollowing(userId: ID!): Boolean
   lastMessagePreview: String
   messages(limit: Int = 10, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): [Message!]
+  messagesConnection(after: String, before: String, first: Int, last: Int): UserMessagesConnection
   mutualFollowers: [User!]
   name: String
   profile: Profile
   receivedMessages: [Message!]
+  receivedMessagesConnection(after: String, before: String, first: Int, last: Int, unreadOnly: Boolean = false): UserReceivedMessagesConnection
   recentMessages: [Message!]
   repliedMessageCount: Int!
   sentMessages: [Message!]
@@ -107,4 +138,60 @@ type User implements Node {
   unreadCount: Int
   unreadMessageCount: Int!
   username: String
+}
+
+type UserAdvancedMessagesConnection {
+  edges: [UserAdvancedMessagesConnectionEdge]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserAdvancedMessagesConnectionEdge {
+  cursor: String!
+  node: Message
+}
+
+type UserFollowersConnection {
+  edges: [UserFollowersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserFollowersConnectionEdge {
+  cursor: String!
+  followSince: DateTime
+  isMutual: Boolean
+  node: User
+}
+
+type UserFollowingConnection {
+  edges: [UserFollowingConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserFollowingConnectionEdge {
+  cursor: String!
+  followedSince: DateTime
+  node: User
+}
+
+type UserMessagesConnection {
+  edges: [UserMessagesConnectionEdge]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserMessagesConnectionEdge {
+  cursor: String!
+  node: Message
+}
+
+type UserReceivedMessagesConnection {
+  edges: [UserReceivedMessagesConnectionEdge]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserReceivedMessagesConnectionEdge {
+  cursor: String!
+  node: Message
 }

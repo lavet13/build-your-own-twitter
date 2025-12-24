@@ -1,28 +1,26 @@
 {
   "name": "monorepo",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
   "scripts": {
     "dev": "npm-run-all -p -l dev:* docker:up",
     "dev:client": "yarn workspace client dev",
     "dev:studio": "yarn workspace server db:studio",
     "dev:server": "yarn workspace server dev",
-
     "build": "npm-run-all -p -l build:*",
     "build:client": "yarn workspace client build",
     "build:server": "yarn workspace server build",
-
     "preview": "npm-run-all -p -l preview:*",
     "preview:client": "yarn workspace client preview",
     "preview:server": "yarn workspace server preview",
-
     "db:migrate": "yarn workspace server db:migrate",
     "db:reset": "yarn workspace server db:reset",
     "db:studio": "yarn workspace server db:studio",
     "db:seed": "yarn workspace server db:seed",
-
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:reset": "docker-compose down -v && docker-compose up -d"

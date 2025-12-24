@@ -7,6 +7,7 @@
     "lib": [
       "ES2022"
     ],
+
     // File Layout
     "outDir": "./dist",
     // Output Options

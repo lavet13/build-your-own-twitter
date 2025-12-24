@@ -1,9 +1,15 @@
 import { builder } from "@/builder";
 import { prisma } from "@/db";
-import { queryFromInfo } from "@pothos/plugin-prisma";
+import { Prisma } from "@/lib/prisma/client";
+import { prismaConnectionHelpers, queryFromInfo } from "@pothos/plugin-prisma";
 
 export const FollowNode = builder.prismaNode("Follow", {
   id: { field: "followingId_followedById" },
+
+  select: {
+    followingId: true,
+    followedById: true,
+  },
 
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
@@ -24,6 +30,9 @@ export const FollowNode = builder.prismaNode("Follow", {
     }),
 
     followingDuration: t.string({
+      select: {
+        createdAt: true,
+      },
       resolve: (follow) => {
         const now = new Date();
         const created = follow.createdAt;
@@ -42,12 +51,12 @@ export const FollowNode = builder.prismaNode("Follow", {
     }),
 
     isMutual: t.boolean({
-      resolve: async (follow) => {
+      resolve: async (parent) => {
         const reverseFollow = await prisma.follow.findUnique({
           where: {
             followingId_followedById: {
-              followingId: follow.followedById,
-              followedById: follow.followingId,
+              followingId: parent.followedById,
+              followedById: parent.followingId,
             },
           },
         });
@@ -235,6 +244,75 @@ export const UserNode = builder.prismaNode("User", {
       resolve: (user) => !!user.profile?.avatar,
     }),
 
+    // messagesConnection: t.relatedConnection("sentMessages", {
+    //   cursor: "id",
+    //   totalCount: true,
+    //
+    //   defaultSize: 20,
+    //   maxSize: 100,
+    // }),
+
+    advancedMessagesConnection: t.relatedConnection("sentMessages", {
+      cursor: "id",
+      totalCount: true,
+
+      args: {
+        unreadOnly: t.arg.boolean({ defaultValue: false }),
+        hasReplies: t.arg.boolean(),
+        oldestFirst: t.arg.boolean({ defaultValue: false }),
+        search: t.arg.string(),
+      },
+
+      query: (args) => {
+        const where: Prisma.MessageWhereInput = {};
+
+        if (args.unreadOnly) {
+          where.isRead = false;
+        }
+
+        if (args.hasReplies !== undefined) {
+          where.replies = args.hasReplies ? { some: {} } : { none: {} };
+        }
+
+        if (args.search) {
+          where.content = {
+            contains: args.search,
+            mode: "insensitive",
+          };
+        }
+
+        return {
+          where: Object.keys(where).length > 0 ? where : undefined,
+          orderBy: {
+            createdAt: args.oldestFirst ? "asc" : "desc",
+          },
+        };
+      },
+    }),
+
+    receivedMessagesConnection: t.relatedConnection("receivedMessages", {
+      cursor: "id",
+
+      totalCount: true,
+
+      args: {
+        unreadOnly: t.arg.boolean({ defaultValue: false }),
+      },
+
+      query: (args) => {
+        const where: Prisma.MessageWhereInput = {};
+
+        if (args.unreadOnly) {
+          where.isRead = false;
+        }
+
+        return {
+          where: Object.keys(where).length > 0 ? where : undefined,
+          orderBy: { createdAt: "desc" },
+        };
+      },
+    }),
+
     sentMessages: t.relation("sentMessages"),
     recentMessages: t.relation("sentMessages", {
       query: {
@@ -305,7 +383,6 @@ export const UserNode = builder.prismaNode("User", {
           }
         }
 
-        console.log(query);
         return query;
       },
     }),
@@ -362,42 +439,37 @@ export const UserNode = builder.prismaNode("User", {
     // Check if this user follows another user
     isFollowing: t.boolean({
       args: { userId: t.arg.id({ required: true }) },
-      resolve: async (parent, args) => {
-        const follow = await prisma.follow.findUnique({
+      select: (args) => ({
+        following: {
           select: {
             followingId: true,
             followedById: true,
           },
-          where: {
-            followingId_followedById: {
-              followingId: parent.id, // This user following
-              followedById: args.userId, // The other user
-            },
-          },
-        });
-
-        return !!follow;
+          // Filter to only the user we're checking
+          where: { followedById: args.userId },
+          take: 1, // We only need to know if at least one exists
+        },
+      }),
+      resolve: async (parent) => {
+        return parent.following.length > 0;
       },
     }),
 
     // Check if another user follows this user
     isFollowed: t.boolean({
       args: { userId: t.arg.id({ required: true }) },
-      resolve: async (parent, args) => {
-        const follow = await prisma.follow.findUnique({
+      select: (args) => ({
+        followedBy: {
           select: {
             followingId: true,
             followedById: true,
           },
-          where: {
-            followingId_followedById: {
-              followingId: args.userId,
-              followedById: parent.id,
-            },
-          },
-        });
-
-        return !!follow;
+          where: { followingId: args.userId },
+          take: 1,
+        },
+      }),
+      resolve: async (parent) => {
+        return parent.followedBy.length > 0;
       },
     }),
 
@@ -409,6 +481,8 @@ export const UserNode = builder.prismaNode("User", {
       description: "Total number of users being followed",
     }),
 
+    followingTest: t.relation("following"),
+
     receivedMessages: t.relation("receivedMessages", {
       query: {
         orderBy: { createdAt: "desc" },
@@ -418,62 +492,322 @@ export const UserNode = builder.prismaNode("User", {
   }),
 });
 
+const messagesConnectionHelpers = prismaConnectionHelpers(builder, "Message", {
+  cursor: "id",
+
+  args: (t) => ({
+    unreadOnly: t.boolean({ defaultValue: false }),
+    search: t.string(),
+  }),
+
+  select: () => ({
+    id: true,
+    content: true,
+    isRead: true,
+  }),
+
+  query: (args) => ({
+    where: {
+      ...(args.unreadOnly && { isRead: true }),
+      ...(args.search && {
+        content: {
+          contains: args.search,
+          mode: "insensitive" as const,
+        },
+      }),
+    },
+    orderBy: { createdAt: "desc" as const },
+  }),
+});
+
+const followersConnectionHelpers = prismaConnectionHelpers(builder, "Follow", {
+  cursor: "followingId_followedById",
+
+  select(nodeSelection) {
+    return {
+      // Select the User node (the follower)
+      followedBy: nodeSelection({}),
+
+      followedById: true,
+      followingId: true,
+      createdAt: true,
+    };
+  },
+  resolveNode: (follow) => follow.followedBy,
+});
+
+const followingConnectionHelpers = prismaConnectionHelpers(builder, "Follow", {
+  cursor: "followingId_followedById",
+
+  select(nodeSelection) {
+    return {
+      // Select the User node (who is being followed)
+      following: nodeSelection(),
+      followedById: true,
+      followingId: true,
+      createdAt: true,
+    };
+  },
+
+  resolveNode: (follow) => follow.following,
+});
+
+// When edge and node are the same type (no join table)
+const commentConnectionHelpers = prismaConnectionHelpers(builder, "Message", {
+  cursor: "id",
+});
+
+builder.prismaObjectFields(MessageNode, (t) => ({
+  // This is simpler because Message.replies directly returns Message[]
+  repliesConnectionManual: t.connection({
+    // Use the helper's ref for the type
+    type: commentConnectionHelpers.ref,
+
+    select: (args, ctx, nestedSelection) => {
+      return {
+        replies: commentConnectionHelpers.getQuery(args, ctx, nestedSelection),
+      };
+    },
+
+    resolve: (message, args, ctx) => {
+      return commentConnectionHelpers.resolve(message.replies, args, ctx);
+    },
+  }),
+
+  repliesConnectionSimple: t.relatedConnection("replies", {
+    cursor: "id",
+
+    args: {
+      oldestFirst: t.arg.boolean({ defaultValue: true }),
+    },
+
+    query: (args) => ({
+      orderBy: {
+        createdAt: args.oldestFirst ? "asc" : "desc",
+      },
+    }),
+  }),
+}));
+
 builder.prismaObjectFields(UserNode, (t) => ({
+  messagesConnection: t.connection({
+    type: MessageNode,
+
+    args: messagesConnectionHelpers.getArgs(),
+
+    select(args, ctx, nestedSelection) {
+      console.log(
+        messagesConnectionHelpers.getQuery(args, ctx, nestedSelection)
+      );
+
+      return {
+        sentMessages: messagesConnectionHelpers.getQuery(
+          args,
+          ctx,
+          nestedSelection
+        ),
+      };
+    },
+
+    resolve: (user, args, ctx) => {
+      console.log({ user });
+      return messagesConnectionHelpers.resolve(user.sentMessages, args, ctx);
+    },
+  }),
+
+  followersConnection: t.connection(
+    {
+      type: UserNode,
+      select: (args, ctx, nestedSelection) => {
+        return {
+          following: followersConnectionHelpers.getQuery(
+            args,
+            ctx,
+            nestedSelection
+          ),
+        };
+      },
+      resolve: (user, args, ctx) => {
+        console.log(user.following);
+        return followersConnectionHelpers.resolve(user.following, args, ctx);
+      },
+    },
+    {},
+    {
+      fields: (edge) => ({
+        isMutual: edge.field({
+          type: "Boolean",
+          resolve: async (follow) => {
+            const reverseFollow = await prisma.follow.findUnique({
+              where: {
+                followingId_followedById: {
+                  followingId: follow.followedById,
+                  followedById: follow.followingId,
+                },
+              },
+              select: {
+                followingId: true,
+                followedById: true,
+              },
+            });
+
+            return !!reverseFollow;
+          },
+        }),
+
+        followSince: edge.field({
+          type: "DateTime",
+          resolve: async (follow) => {
+            return follow.createdAt;
+          },
+        }),
+      }),
+    }
+  ),
+
+  // filteredFollowersConnection: t.connection({
+  //   type: UserNode,
+  //
+  //   args: {
+  //     sortRecent: t.arg.boolean(),
+  //   },
+  //
+  //   select: (args, ctx, nestedSelection) => {
+  //     return {
+  //       followedBy: {
+  //         ...followersConnectionHelpers.getQuery(args, ctx, nestedSelection),
+  //         orderBy: args.sortRecent
+  //           ? { createdAt: "desc" }
+  //           : { createdAt: "asc" },
+  //       },
+  //     };
+  //   },
+  //   resolve: (user, args, ctx) => {
+  //     console.log({ userFollowedBy: user.followedBy });
+  //     return followersConnectionHelpers.resolve(user.followedBy, args, ctx);
+  //   },
+  // }),
+
+  followingConnection: t.connection(
+    {
+      type: UserNode,
+
+      args: {
+        sortByRecent: t.arg.boolean({ defaultValue: true }),
+        verified: t.arg.boolean(),
+      },
+
+      select: (args, ctx, nestedSelection) => {
+        return {
+          followedBy: {
+            ...followingConnectionHelpers.getQuery(args, ctx, nestedSelection),
+
+            orderBy: { createdAt: args.sortByRecent ? "desc" : "asc" },
+
+            where:
+              args.verified !== undefined
+                ? {
+                    following: {
+                      username: { not: null },
+                    },
+                  }
+                : undefined,
+          },
+        };
+      },
+
+      resolve: (user, args, ctx) => {
+        return followingConnectionHelpers.resolve(user.followedBy, args, ctx);
+      },
+    },
+    {},
+    {
+      fields: (edge) => ({
+        followedSince: edge.field({
+          type: "DateTime",
+          resolve: (follow) => follow.createdAt,
+        }),
+      }),
+    }
+  ),
+
+  // followers: t.prismaField({
+  //   type: [UserNode],
+  //   resolve: async (query, parent) => {
+  //     console.log({ query });
+  //     const follows = await prisma.follow.findMany({
+  //       where: {
+  //         followedById: parent.id,
+  //       },
+  //       select: {
+  //         following: query,
+  //       },
+  //     });
+  //
+  //     return follows.map((f) => f.following);
+  //   },
+  // }),
+
   followers: t.field({
     type: [UserNode],
-    resolve: async (parent, _args, context, info) => {
-      const userQuery = queryFromInfo({
-        context,
-        info,
-      });
-
-      const follows = await prisma.follow.findMany({
-        where: { followedById: parent.id },
-        select: { following: userQuery },
-      });
-
-      return follows.map((f) => f.following);
+    select: (_args, _ctx, nestedSelection) => {
+      return {
+        followedBy: {
+          select: {
+            following: nestedSelection({}),
+          },
+        },
+      };
+    },
+    resolve: async (parent) => {
+      return parent.followedBy.map((f) => f.following);
     },
     description: "Users who follow this user",
   }),
 
-  following: t.field({
-    type: [UserNode],
-    resolve: async (parent, _args, context, info) => {
-      const userQuery = queryFromInfo({
-        context,
-        info,
-      });
+  // following: t.field({
+  //   type: [UserNode],
+  //   description: "Users this user follows",
+  //   select: (_args, _ctx, nestedSelection) => ({
+  //     following: {
+  //       select: {
+  //         followedBy: nestedSelection({}),
+  //       },
+  //     },
+  //   }),
+  //   resolve: (parent) => parent.following.map((f) => f.followedBy),
+  // }),
 
+  following: t.prismaField({
+    type: [UserNode],
+    description: "Users this user follows",
+    resolve: async (query, parent) => {
       const follows = await prisma.follow.findMany({
         where: { followingId: parent.id },
-        include: { followedBy: userQuery },
+        select: {
+          followedBy: query,
+        },
       });
-
       return follows.map((f) => f.followedBy);
     },
-    description: "Users this user follows",
   }),
 
-  mutualFollowers: t.field({
+  mutualFollowers: t.prismaField({
     type: [UserNode],
-    resolve: async (parent, _args, context, info) => {
+    select: {
+      following: {
+        select: {
+          followedById: true,
+        },
+      },
+    },
+    resolve: async (query, parent, _args) => {
       // Step 1: Find all users THIS user follows
-      const following = await prisma.follow.findMany({
-        where: { followingId: parent.id },
-        select: { followedById: true },
-      });
-
-      const followingIds = following.map((f) => f.followedById);
-
-      const userQuery = queryFromInfo({
-        context,
-        info,
-      });
+      const followingIds = parent.following.map((f) => f.followedById);
 
       // Step 2: Find which of those ALSO follow this user back
       const mutuals = await prisma.user.findMany({
-        ...userQuery,
+        ...query,
         where: {
           id: { in: followingIds },
           followedBy: {
@@ -501,10 +835,6 @@ builder.queryFields((t) => ({
   users: t.prismaField({
     type: [UserNode],
     resolve: (query, _root) => {
-      console.log({
-        query,
-        include: query.include,
-      });
       return prisma.user.findMany({
         ...query,
         orderBy: { createdAt: "desc" },
@@ -578,32 +908,32 @@ builder.mutationField("followUser", (t) =>
         path: ["follow"],
       });
 
-      const existingFollow = await prisma.follow.findUnique({
-        ...followQuery,
-        where: {
-          followingId_followedById: {
+      try {
+        const follow = await prisma.follow.create({
+          ...followQuery,
+          data: {
             followingId: args.currentUserId,
             followedById: args.userIdToFollow,
           },
-        },
-      });
+        });
 
-      if (existingFollow) {
-        return {
-          success: false,
-          message: "You are already following the user",
-        };
+        return { success: true, follow, message: "Successfully followed user" };
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          // P2002: Unique constraint violation (already following)
+          if (error.code === "P2002") {
+            return {
+              success: false,
+              message: "You are already following this user",
+            };
+          }
+          // P2003: Foreign key constraint (user doesn't exist)
+          if (error.code === "P2003") {
+            return { success: false, message: "User not found" };
+          }
+        }
+        throw error;
       }
-
-      const follow = await prisma.follow.create({
-        ...followQuery,
-        data: {
-          followingId: args.currentUserId,
-          followedById: args.userIdToFollow,
-        },
-      });
-
-      return { success: true, follow, message: "Successfully followed user" };
     },
   })
 );
@@ -618,42 +948,32 @@ builder.mutationField("unfollowUser", (t) =>
       }),
       currentUserId: t.arg.id({ required: true, description: "Current User" }),
     },
-    resolve: async (_root, args, context, info) => {
+    resolve: async (_root, args) => {
       if (args.userIdToUnfollow === args.currentUserId) {
         return { success: false, message: "You cannot unfollow yourself!" };
       }
 
-      const followQuery = queryFromInfo({
-        context,
-        info,
-        path: ["follow"],
-      });
-
-      const existingFollow = await prisma.follow.findUnique({
-        ...followQuery,
-        where: {
-          followingId_followedById: {
-            followingId: args.currentUserId,
-            followedById: args.userIdToUnfollow,
+      try {
+        await prisma.follow.delete({
+          where: {
+            followingId_followedById: {
+              followingId: args.currentUserId,
+              followedById: args.userIdToUnfollow,
+            },
           },
-        },
-      });
-
-      if (!existingFollow) {
-        return {
-          success: false,
-          message: "You are not following this user",
-        };
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          // P2025: Record not found (not following)
+          if (error.code === "P2025") {
+            return {
+              success: false,
+              message: "You are not following this user",
+            };
+          }
+        }
+        throw error;
       }
-
-      await prisma.follow.delete({
-        where: {
-          followingId_followedById: {
-            followingId: args.currentUserId,
-            followedById: args.userIdToUnfollow,
-          },
-        },
-      });
 
       return { success: true, message: "Successfully unfollowed user" };
     },
@@ -684,18 +1004,6 @@ builder.mutationField("createUser", (t) =>
     },
 
     resolve: async (_root, args, context, info) => {
-      const existingUser = await prisma.user.findUnique({
-        select: { id: true },
-        where: { email: args.email },
-      });
-
-      if (existingUser) {
-        return {
-          success: false,
-          message: "Пользователь с таким E-mail существует",
-        };
-      }
-
       const optimizedQuery = queryFromInfo({
         context,
         info,
@@ -703,19 +1011,29 @@ builder.mutationField("createUser", (t) =>
         path: ["user"], // Matches the field name in CreateUserResult
       });
 
-      console.log("OptimizedQuery:", optimizedQuery);
+      try {
+        const user = await prisma.user.create({
+          ...optimizedQuery,
+          data: {
+            email: args.email,
+            username: args.username,
+            displayName: args.displayName,
+          },
+        });
 
-      const user = await prisma.user.create({
-        ...optimizedQuery,
-        data: {
-          email: args.email,
-          username: args.username,
-          displayName: args.displayName,
-        },
-      });
-      console.log("user:", user);
-
-      return { success: true, message: "User created successfully", user };
+        return { success: true, message: "User created successfully", user };
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          // P2002: Unique constraint violation (email already exists)
+          if (error.code === "P2002") {
+            return {
+              success: false,
+              message: "A user with this email already exists.",
+            };
+          }
+        }
+        throw error;
+      }
     },
   })
 );
@@ -747,41 +1065,52 @@ builder.mutationField("sendMessage", (t) =>
       replyToId: t.arg.id(),
     },
     resolve: async (_root, args, context, info) => {
-      const [sender, receiver] = await Promise.all([
-        prisma.user.findUnique({
-          where: { id: args.senderId },
-          select: { id: true },
-        }),
-        prisma.user.findUnique({
-          where: { id: args.receiverId },
-          select: { id: true },
-        }),
-      ]);
-
-      if (!sender || !receiver) {
-        return { error: "Sender or receiver not found", success: false };
-      }
-
       const optimizedQuery = queryFromInfo({
         context,
         info,
         path: ["message"],
       });
 
-      console.log("OptimizedQuery:", optimizedQuery);
+      try {
+        const message = await prisma.message.create({
+          ...optimizedQuery,
+          data: {
+            content: args.content,
+            senderId: args.senderId,
+            receiverId: args.receiverId,
+            replyToId: args.replyToId,
+          },
+        });
 
-      const message = await prisma.message.create({
-        ...optimizedQuery,
-        data: {
-          content: args.content,
-          senderId: args.senderId,
-          receiverId: args.receiverId,
-          replyToId: args.replyToId,
-        },
-      });
-      console.log("message:", message);
+        return { message, success: true };
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          // P2003: Foreign key constraint violation
+          if (error.code === "P2003") {
+            const field = error.meta?.field_name;
 
-      return { message, success: true };
+            if (field === "senderId" || field === "receiverId") {
+              return {
+                error: "Sender or receiver not found",
+                success: false,
+              };
+            }
+
+            if (field === "replyToId") {
+              return {
+                error: "Reply message not found",
+                success: false,
+              };
+            }
+
+            return {
+              error: "Invalid reference",
+              success: false,
+            };
+          }
+        }
+        throw error;
+      }
     },
   })
 );
