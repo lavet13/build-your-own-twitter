@@ -44,10 +44,39 @@ type Message implements Node {
   receiver: User!
   recentReply(after: DateTime!): String
   replies: [Message!]
+  repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageRepliesConnectionSimpleConnection
   replyTo: Message
   sender: User!
   senderDisplayName: String
   senderInfo(includeEmail: Boolean = false): String
+}
+
+type MessageConnection {
+  edges: [MessageEdgeNew]
+  """Whether any message in this connection has replies"""
+  hasReplies: Boolean
+  latestMessageData: DateTime
+  pageInfo: PageInfo!
+  """Total number of messages"""
+  totalCount: Int
+  unreadCount: Int
+}
+
+type MessageEdgeNew {
+  cursor: String!
+  """Whether any message in this connection has replies"""
+  hasReplies: Boolean
+  node: Message
+}
+
+type MessageRepliesConnectionSimpleConnection {
+  edges: [MessageRepliesConnectionSimpleConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type MessageRepliesConnectionSimpleConnectionEdge {
+  cursor: String!
+  node: Message
 }
 
 type Mutation {
@@ -124,15 +153,17 @@ type User implements Node {
   isFollowing(userId: ID!): Boolean
   lastMessagePreview: String
   messages(limit: Int = 10, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): [Message!]
-  messagesConnection(after: String, before: String, first: Int, last: Int): UserMessagesConnection
+  messagesConnection(after: String, before: String, first: Int, last: Int, search: String, unreadOnly: Boolean = false): MessageConnection
   mutualFollowers: [User!]
   name: String
   profile: Profile
+  receivedMessageConnection(after: String, before: String, first: Int, last: Int, unreadOnly: Boolean = false): MessageConnection
   receivedMessages: [Message!]
   receivedMessagesConnection(after: String, before: String, first: Int, last: Int, unreadOnly: Boolean = false): UserReceivedMessagesConnection
   recentMessages: [Message!]
   repliedMessageCount: Int!
   sentMessages: [Message!]
+  sentMessagesConnection(after: String, before: String, first: Int, last: Int, search: String, unreadOnly: Boolean = false): MessageConnection
   todayMessageCount: Int!
   totalMessageCount: Int!
   unreadCount: Int
@@ -172,17 +203,6 @@ type UserFollowingConnectionEdge {
   cursor: String!
   followedSince: DateTime
   node: User
-}
-
-type UserMessagesConnection {
-  edges: [UserMessagesConnectionEdge]
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type UserMessagesConnectionEdge {
-  cursor: String!
-  node: Message
 }
 
 type UserReceivedMessagesConnection {

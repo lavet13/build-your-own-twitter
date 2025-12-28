@@ -552,28 +552,106 @@ const followingConnectionHelpers = prismaConnectionHelpers(builder, "Follow", {
   resolveNode: (follow) => follow.following,
 });
 
-// When edge and node are the same type (no join table)
-const commentConnectionHelpers = prismaConnectionHelpers(builder, "Message", {
-  cursor: "id",
+const MessageEdge = builder.edgeObject({
+  type: MessageNode,
+  name: "MessageEdgeNew",
+
+  fields: (t) => ({
+    hasReplies: t.boolean({
+      description: "Whether any message in this connection has replies",
+      resolve: async (edge) => {
+        const withReplies = await prisma.message.findFirst({
+          where: {
+            id: edge.node.id,
+            replies: { some: {} },
+          },
+        });
+
+        return !!withReplies;
+      },
+    }),
+  }),
 });
 
-builder.prismaObjectFields(MessageNode, (t) => ({
-  // This is simpler because Message.replies directly returns Message[]
-  repliesConnectionManual: t.connection({
-    // Use the helper's ref for the type
-    type: commentConnectionHelpers.ref,
+const MessageConnection = builder.connectionObject({
+  type: MessageNode,
+  name: "MessageConnection",
 
-    select: (args, ctx, nestedSelection) => {
-      return {
-        replies: commentConnectionHelpers.getQuery(args, ctx, nestedSelection),
-      };
-    },
+  fields: (t) => ({
+    totalCount: t.int({
+      description: "Total number of messages",
+      resolve: (connection) => {
+        const { totalCount } = connection as {
+          totalCount?: number | (() => number | Promise<number>);
+        };
 
-    resolve: (message, args, ctx) => {
-      return commentConnectionHelpers.resolve(message.replies, args, ctx);
-    },
+        return typeof totalCount === "function" ? totalCount() : totalCount;
+      },
+    }),
+
+    unreadCount: t.int({
+      resolve: (connection) => {
+        // Cast to the resolved type
+        type ResolvedConnection = {
+          edges: Array<{
+            cursor: string;
+            node: typeof MessageNode.$inferType;
+          }>;
+        };
+        const conn = connection as unknown as ResolvedConnection;
+
+        const unread = conn.edges.filter((edge) => !edge.node.isRead).length;
+
+        return unread;
+      },
+    }),
+
+    hasReplies: t.boolean({
+      description: "Whether any message in this connection has replies",
+      resolve: async (connection) => {
+        type ResolvedConnection = {
+          edges: Array<{
+            cursor: string;
+            node: typeof MessageNode.$inferType;
+          }>;
+        };
+        const conn = connection as unknown as ResolvedConnection;
+
+        const messageIds = conn.edges!.map((e) => e.node.id);
+
+        const withReplies = await prisma.message.findFirst({
+          where: {
+            id: { in: messageIds },
+            replies: { some: {} },
+          },
+        });
+
+        return !!withReplies;
+      },
+    }),
+
+    latestMessageData: t.field({
+      type: "DateTime",
+      nullable: true,
+      resolve: (connection) => {
+        type ResolvedConnection = {
+          edges: Array<{
+            cursor: string;
+            node: typeof MessageNode.$inferType;
+          }>;
+        };
+        const conn = connection as unknown as ResolvedConnection;
+
+        if (conn.edges.length === 0) return null;
+
+        const latest = conn.edges[0]?.node.createdAt;
+        return latest;
+      },
+    }),
   }),
+}, MessageEdge);
 
+builder.prismaObjectFields(MessageNode, (t) => ({
   repliesConnectionSimple: t.relatedConnection("replies", {
     cursor: "id",
 
@@ -590,30 +668,94 @@ builder.prismaObjectFields(MessageNode, (t) => ({
 }));
 
 builder.prismaObjectFields(UserNode, (t) => ({
-  messagesConnection: t.connection({
-    type: MessageNode,
+  sentMessagesConnection: t.relatedConnection(
+    "sentMessages",
+    {
+      cursor: "id",
+      totalCount: true,
 
-    args: messagesConnectionHelpers.getArgs(),
+      args: {
+        unreadOnly: t.arg.boolean({ defaultValue: false }),
+        search: t.arg.string(),
+      },
 
-    select(args, ctx, nestedSelection) {
-      console.log(
-        messagesConnectionHelpers.getQuery(args, ctx, nestedSelection)
-      );
+      query: (args) => ({
+        where: {
+          ...(args.unreadOnly && { isRead: false }),
+          ...(args.search && {
+            content: {
+              contains: args.search,
+              mode: "insensitive" as const,
+            },
+          }),
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    },
+    MessageConnection,
+    MessageEdge
+  ),
 
-      return {
-        sentMessages: messagesConnectionHelpers.getQuery(
+  receivedMessageConnection: t.relatedConnection(
+    "receivedMessages",
+    {
+      cursor: "id",
+      totalCount: true,
+
+      args: {
+        unreadOnly: t.arg.boolean({ defaultValue: false }),
+      },
+
+      query: (args) => ({
+        where: {
+          ...(args.unreadOnly && { isRead: false }),
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+    },
+    MessageConnection
+  ),
+
+  messagesConnection: t.connection(
+    {
+      type: MessageNode,
+
+      args: messagesConnectionHelpers.getArgs(),
+
+      select(args, ctx, nestedSelection) {
+        return {
+          sentMessages: messagesConnectionHelpers.getQuery(
+            args,
+            ctx,
+            nestedSelection
+          ),
+        };
+      },
+
+      resolve: (user, args, ctx) => {
+        const connection = messagesConnectionHelpers.resolve(
+          user.sentMessages,
           args,
-          ctx,
-          nestedSelection
-        ),
-      };
+          ctx
+        );
+        console.log({ connection });
+        return { ...connection };
+      },
     },
+    MessageConnection,
+    MessageEdge
+  ),
 
-    resolve: (user, args, ctx) => {
-      console.log({ user });
-      return messagesConnectionHelpers.resolve(user.sentMessages, args, ctx);
-    },
-  }),
+  // messagesConnection: t.relatedConnection("sentMessages", {
+  //   cursor: "id",
+  //   totalCount: true,
+  //
+  //   args: {
+  //     unreadOnly: t.arg.boolean({ defaultValue: false }),
+  //   },
+  // }),
 
   followersConnection: t.connection(
     {
