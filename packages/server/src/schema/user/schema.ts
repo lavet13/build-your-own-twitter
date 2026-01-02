@@ -67,6 +67,18 @@ export const FollowNode = builder.prismaNode("Follow", {
   }),
 });
 
+export const MessageInterface = builder.prismaInterface("Message", {
+  name: "MessageBase",
+  fields: (t) => ({
+    id: t.exposeID("id"),
+    content: t.exposeString("content"),
+    createdAt: t.expose("createdAt", { type: "DateTime" }),
+    isRead: t.exposeBoolean("isRead"),
+    sender: t.relation("sender"),
+    receiver: t.relation("receiver"),
+  }),
+});
+
 export const MessageNode = builder.prismaNode("Message", {
   id: { field: "id" },
 
@@ -121,7 +133,7 @@ export const MessageNode = builder.prismaNode("Message", {
       resolve: (message) => {
         const sender = message.sender;
 
-        let info = sender.displayName || sender.username || "Unknown";
+        let info = sender.displayName || sender.username || "-";
 
         if ("email" in sender && sender.email) {
           info += `(${sender.email})`;
@@ -183,7 +195,7 @@ export const UserNode = builder.prismaNode("User", {
     unreadCount: t.int({
       select: {
         receivedMessages: {
-          where: { isRead: true },
+          where: { isRead: false },
           select: { id: true },
         },
       },
@@ -297,6 +309,9 @@ export const UserNode = builder.prismaNode("User", {
 
       args: {
         unreadOnly: t.arg.boolean({ defaultValue: false }),
+        hasReplies: t.arg.boolean(),
+        oldestFirst: t.arg.boolean({ defaultValue: false }),
+        search: t.arg.string(),
       },
 
       query: (args) => {
@@ -306,9 +321,22 @@ export const UserNode = builder.prismaNode("User", {
           where.isRead = false;
         }
 
+        if (args.hasReplies !== undefined) {
+          where.replies = args.hasReplies ? { some: {} } : { none: {} };
+        }
+
+        if (args.search) {
+          where.content = {
+            contains: args.search,
+            mode: "insensitive",
+          };
+        }
+
         return {
           where: Object.keys(where).length > 0 ? where : undefined,
-          orderBy: { createdAt: "desc" },
+          orderBy: {
+            createdAt: args.oldestFirst ? "asc" : "desc",
+          },
         };
       },
     }),
@@ -481,14 +509,188 @@ export const UserNode = builder.prismaNode("User", {
       description: "Total number of users being followed",
     }),
 
-    followingTest: t.relation("following"),
-
     receivedMessages: t.relation("receivedMessages", {
       query: {
         orderBy: { createdAt: "desc" },
         take: 10,
       },
     }),
+
+    asViewer: t.variant(AuthenticatedViewer),
+
+    publicProfile: t.variant(PublicProfile),
+  }),
+});
+
+export const UserCard = builder.prismaNode("User", {
+  id: { field: "id" },
+  variant: "UserCard",
+  description: "Minimal user info for cards/lists",
+  fields: (t) => ({
+    displayName: t.exposeString("displayName"),
+    username: t.exposeString("username"),
+
+    avatarUrl: t.string({
+      nullable: true,
+      select: { profile: { select: { avatar: true } } },
+      resolve: (user) => user.profile?.avatar,
+    }),
+
+    followerCount: t.relationCount("followedBy"),
+    followingCount: t.relationCount("following"),
+
+    fullProfile: t.variant("User"),
+  }),
+});
+
+export const CurrentUser = builder.prismaNode("User", {
+  id: { field: "id" },
+  variant: "CurrentUser",
+  description: "Extended user info for the logged-in user",
+  fields: (t) => ({
+    email: t.exposeString("email"),
+    username: t.exposeString("username"),
+    displayName: t.exposeString("displayName"),
+
+    unreadMessageCount: t.relationCount("receivedMessages", {
+      where: {
+        isRead: false,
+      },
+    }),
+
+    profile: t.relation("profile"),
+
+    asUser: t.variant("User"),
+  }),
+});
+
+export const MessagePreview = builder.prismaNode("Message", {
+  id: { field: "id" },
+  variant: "MessagePreview",
+  description: "Message preview in lists",
+  fields: (t) => ({
+    // Truncated content
+    preview: t.string({
+      select: { content: true },
+      resolve: (msg) => {
+        return msg.content.length > 100
+          ? msg.content.slice(0, 100) + "..."
+          : msg.content;
+      },
+    }),
+
+    createdAt: t.expose("createdAt", { type: "DateTime" }),
+    isRead: t.exposeBoolean("isRead"),
+
+    // Use UserCard variant for sender (not full user!)
+    sender: t.relation("sender", {
+      type: UserCard,
+    }),
+
+    // Count replies without loading them
+    replyCount: t.relationCount("replies"),
+
+    hasReplies: t.boolean({
+      select: { replies: { select: { id: true }, take: 1 } },
+      resolve: (msg) => {
+        console.log({ msg });
+        return msg.replies.length > 0;
+      },
+    }),
+
+    // Link to full message
+    fullMessage: t.variant("Message"),
+  }),
+});
+
+export const PublicProfile = builder.prismaNode("User", {
+  id: { field: "id" },
+  variant: "PublicProfile",
+  fields: (t) => ({
+    username: t.exposeString("username"),
+    displayName: t.exposeString("displayName"),
+    fullUser: t.variant("User"),
+
+    followerCount: t.relationCount("followedBy"),
+    followingCount: t.relationCount("following"),
+
+    // Public relations
+    profile: t.relation("profile"),
+  }),
+});
+
+export const AuthenticatedViewer = builder.prismaNode("User", {
+  id: { field: "id" },
+  variant: "AuthenticatedViewer",
+  fields: (t) => ({
+    email: t.exposeString("email"),
+    username: t.exposeString("username"),
+    displayName: t.exposeString("displayName"),
+
+    unreadMessageCount: t.relationCount("receivedMessages", {
+      where: { isRead: false },
+    }),
+
+    unreadMessages: t.relatedConnection("receivedMessages", {
+      cursor: "id",
+
+      query: {
+        where: { isRead: false },
+        orderBy: { createdAt: "desc" },
+      },
+    }),
+
+    // Reference back to full user
+    asUser: t.variant("User"),
+  }),
+});
+
+export const MessageAuthor = builder.prismaNode("User", {
+  id: { field: "id" },
+  variant: "MessageAuthor",
+  fields: (t) => ({
+    displayName: t.exposeString("displayName"),
+    username: t.exposeString("username"),
+
+    avatarUrl: t.string({
+      nullable: true,
+      select: {
+        profile: {
+          select: {
+            avatar: true,
+          },
+        },
+      },
+      resolve: (user) => {
+        return user.profile?.avatar;
+      },
+    }),
+
+    fullProfile: t.variant(PublicProfile),
+
+    totalMessagesSent: t.relationCount("sentMessages"),
+    recentActivityCount: t.relationCount("sentMessages", {
+      where: {
+        createdAt: {
+          gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+        },
+      },
+    }),
+  }),
+});
+
+export const MessageWithAuthor = builder.prismaNode("Message", {
+  id: { field: "id" },
+  variant: "MessageWithAuthor",
+  fields: (t) => ({
+    content: t.exposeString("content"),
+    createdAt: t.expose("createdAt", { type: "DateTime" }),
+
+    author: t.relation("sender", {
+      type: MessageAuthor,
+    }),
+
+    fullMessage: t.variant("Message"),
   }),
 });
 
@@ -502,7 +704,6 @@ const messagesConnectionHelpers = prismaConnectionHelpers(builder, "Message", {
 
   select: () => ({
     id: true,
-    content: true,
     isRead: true,
   }),
 
@@ -523,33 +724,33 @@ const messagesConnectionHelpers = prismaConnectionHelpers(builder, "Message", {
 const followersConnectionHelpers = prismaConnectionHelpers(builder, "Follow", {
   cursor: "followingId_followedById",
 
-  select(nodeSelection) {
-    return {
-      // Select the User node (the follower)
-      followedBy: nodeSelection({}),
+  select: (nodeSelection) => ({
+    // Select the User node (the follower)
+    following: nodeSelection(),
 
-      followedById: true,
-      followingId: true,
-      createdAt: true,
-    };
+    followedById: true,
+    followingId: true,
+    createdAt: true,
+  }),
+
+  resolveNode: (follow) => {
+    return follow.following;
   },
-  resolveNode: (follow) => follow.followedBy,
 });
 
 const followingConnectionHelpers = prismaConnectionHelpers(builder, "Follow", {
   cursor: "followingId_followedById",
 
-  select(nodeSelection) {
-    return {
-      // Select the User node (who is being followed)
-      following: nodeSelection(),
-      followedById: true,
-      followingId: true,
-      createdAt: true,
-    };
-  },
+  select: (nodeSelection) => ({
+    // Select the User node (who is being followed)
+    followedBy: nodeSelection(),
 
-  resolveNode: (follow) => follow.following,
+    followedById: true,
+    followingId: true,
+    createdAt: true,
+  }),
+
+  resolveNode: (follow) => follow.followedBy,
 });
 
 const MessageEdge = builder.edgeObject({
@@ -573,83 +774,86 @@ const MessageEdge = builder.edgeObject({
   }),
 });
 
-const MessageConnection = builder.connectionObject({
-  type: MessageNode,
-  name: "MessageConnection",
+const MessageConnection = builder.connectionObject(
+  {
+    type: MessageNode,
+    name: "MessageConnection",
 
-  fields: (t) => ({
-    totalCount: t.int({
-      description: "Total number of messages",
-      resolve: (connection) => {
-        const { totalCount } = connection as {
-          totalCount?: number | (() => number | Promise<number>);
-        };
+    fields: (t) => ({
+      totalCount: t.int({
+        description: "Total number of messages",
+        resolve: (connection) => {
+          const { totalCount } = connection as {
+            totalCount?: number | (() => number | Promise<number>);
+          };
 
-        return typeof totalCount === "function" ? totalCount() : totalCount;
-      },
+          return typeof totalCount === "function" ? totalCount() : totalCount;
+        },
+      }),
+
+      unreadCount: t.int({
+        resolve: (connection) => {
+          // Cast to the resolved type
+          type ResolvedConnection = {
+            edges: Array<{
+              cursor: string;
+              node: typeof MessageNode.$inferType;
+            }>;
+          };
+          const conn = connection as unknown as ResolvedConnection;
+
+          const unread = conn.edges.filter((edge) => !edge.node.isRead).length;
+
+          return unread;
+        },
+      }),
+
+      hasReplies: t.boolean({
+        description: "Whether any message in this connection has replies",
+        resolve: async (connection) => {
+          type ResolvedConnection = {
+            edges: Array<{
+              cursor: string;
+              node: typeof MessageNode.$inferType;
+            }>;
+          };
+          const conn = connection as unknown as ResolvedConnection;
+
+          const messageIds = conn.edges!.map((e) => e.node.id);
+
+          const withReplies = await prisma.message.findFirst({
+            where: {
+              id: { in: messageIds },
+              replies: { some: {} },
+            },
+          });
+
+          return !!withReplies;
+        },
+      }),
+
+      latestMessageData: t.field({
+        type: "DateTime",
+        nullable: true,
+        resolve: (connection) => {
+          type ResolvedConnection = {
+            edges: Array<{
+              cursor: string;
+              node: typeof MessageNode.$inferType;
+            }>;
+          };
+          const conn = connection as unknown as ResolvedConnection;
+
+          if (conn.edges.length === 0) return null;
+
+          const latest = conn.edges[0]?.node.createdAt;
+          return latest;
+        },
+      }),
     }),
-
-    unreadCount: t.int({
-      resolve: (connection) => {
-        // Cast to the resolved type
-        type ResolvedConnection = {
-          edges: Array<{
-            cursor: string;
-            node: typeof MessageNode.$inferType;
-          }>;
-        };
-        const conn = connection as unknown as ResolvedConnection;
-
-        const unread = conn.edges.filter((edge) => !edge.node.isRead).length;
-
-        return unread;
-      },
-    }),
-
-    hasReplies: t.boolean({
-      description: "Whether any message in this connection has replies",
-      resolve: async (connection) => {
-        type ResolvedConnection = {
-          edges: Array<{
-            cursor: string;
-            node: typeof MessageNode.$inferType;
-          }>;
-        };
-        const conn = connection as unknown as ResolvedConnection;
-
-        const messageIds = conn.edges!.map((e) => e.node.id);
-
-        const withReplies = await prisma.message.findFirst({
-          where: {
-            id: { in: messageIds },
-            replies: { some: {} },
-          },
-        });
-
-        return !!withReplies;
-      },
-    }),
-
-    latestMessageData: t.field({
-      type: "DateTime",
-      nullable: true,
-      resolve: (connection) => {
-        type ResolvedConnection = {
-          edges: Array<{
-            cursor: string;
-            node: typeof MessageNode.$inferType;
-          }>;
-        };
-        const conn = connection as unknown as ResolvedConnection;
-
-        if (conn.edges.length === 0) return null;
-
-        const latest = conn.edges[0]?.node.createdAt;
-        return latest;
-      },
-    }),
-  }),
-}, MessageEdge);
+  },
+  MessageEdge
+);
 
 builder.prismaObjectFields(MessageNode, (t) => ({
   repliesConnectionSimple: t.relatedConnection("replies", {
@@ -724,15 +928,13 @@ builder.prismaObjectFields(UserNode, (t) => ({
 
       args: messagesConnectionHelpers.getArgs(),
 
-      select(args, ctx, nestedSelection) {
-        return {
-          sentMessages: messagesConnectionHelpers.getQuery(
-            args,
-            ctx,
-            nestedSelection
-          ),
-        };
-      },
+      select: (args, ctx, nestedSelection) => ({
+        sentMessages: messagesConnectionHelpers.getQuery(
+          args,
+          ctx,
+          nestedSelection
+        ),
+      }),
 
       resolve: (user, args, ctx) => {
         const connection = messagesConnectionHelpers.resolve(
@@ -740,7 +942,6 @@ builder.prismaObjectFields(UserNode, (t) => ({
           args,
           ctx
         );
-        console.log({ connection });
         return { ...connection };
       },
     },
@@ -748,21 +949,12 @@ builder.prismaObjectFields(UserNode, (t) => ({
     MessageEdge
   ),
 
-  // messagesConnection: t.relatedConnection("sentMessages", {
-  //   cursor: "id",
-  //   totalCount: true,
-  //
-  //   args: {
-  //     unreadOnly: t.arg.boolean({ defaultValue: false }),
-  //   },
-  // }),
-
   followersConnection: t.connection(
     {
       type: UserNode,
       select: (args, ctx, nestedSelection) => {
         return {
-          following: followersConnectionHelpers.getQuery(
+          followedBy: followersConnectionHelpers.getQuery(
             args,
             ctx,
             nestedSelection
@@ -770,16 +962,36 @@ builder.prismaObjectFields(UserNode, (t) => ({
         };
       },
       resolve: (user, args, ctx) => {
-        console.log(user.following);
-        return followersConnectionHelpers.resolve(user.following, args, ctx);
+        return {
+          ...followersConnectionHelpers.resolve(user.followedBy, args, ctx),
+          totalCount: async () => {
+            return prisma.follow.count({
+              where: { followedById: user.id },
+            });
+          },
+        };
       },
     },
-    {},
+    {
+      fields: (t) => ({
+        totalCount: t.int({
+          resolve: (connection) => {
+            const { totalCount } = connection as {
+              totalCount?: number | (() => number | Promise<number>);
+            };
+            return typeof totalCount === "function"
+              ? totalCount()
+              : (totalCount ?? 0);
+          },
+        }),
+      }),
+    },
     {
       fields: (edge) => ({
         isMutual: edge.field({
           type: "Boolean",
           resolve: async (follow) => {
+            console.log({ follow });
             const reverseFollow = await prisma.follow.findUnique({
               where: {
                 followingId_followedById: {
@@ -841,7 +1053,7 @@ builder.prismaObjectFields(UserNode, (t) => ({
 
       select: (args, ctx, nestedSelection) => {
         return {
-          followedBy: {
+          following: {
             ...followingConnectionHelpers.getQuery(args, ctx, nestedSelection),
 
             orderBy: { createdAt: args.sortByRecent ? "desc" : "asc" },
@@ -859,7 +1071,14 @@ builder.prismaObjectFields(UserNode, (t) => ({
       },
 
       resolve: (user, args, ctx) => {
-        return followingConnectionHelpers.resolve(user.followedBy, args, ctx);
+        return {
+          ...followingConnectionHelpers.resolve(user.following, args, ctx),
+          totalCount: async () => {
+            return prisma.follow.count({
+              where: { followingId: user.id },
+            });
+          },
+        };
       },
     },
     {},
@@ -907,32 +1126,32 @@ builder.prismaObjectFields(UserNode, (t) => ({
     description: "Users who follow this user",
   }),
 
-  // following: t.field({
-  //   type: [UserNode],
-  //   description: "Users this user follows",
-  //   select: (_args, _ctx, nestedSelection) => ({
-  //     following: {
-  //       select: {
-  //         followedBy: nestedSelection({}),
-  //       },
-  //     },
-  //   }),
-  //   resolve: (parent) => parent.following.map((f) => f.followedBy),
-  // }),
-
-  following: t.prismaField({
+  following: t.field({
     type: [UserNode],
     description: "Users this user follows",
-    resolve: async (query, parent) => {
-      const follows = await prisma.follow.findMany({
-        where: { followingId: parent.id },
+    select: (_args, _ctx, nestedSelection) => ({
+      following: {
         select: {
-          followedBy: query,
+          followedBy: nestedSelection({}),
         },
-      });
-      return follows.map((f) => f.followedBy);
-    },
+      },
+    }),
+    resolve: (parent) => parent.following.map((f) => f.followedBy),
   }),
+
+  // following: t.prismaField({
+  //   type: [UserNode],
+  //   description: "Users this user follows",
+  //   resolve: async (query, parent) => {
+  //     const follows = await prisma.follow.findMany({
+  //       where: { followingId: parent.id },
+  //       select: {
+  //         followedBy: query,
+  //       },
+  //     });
+  //     return follows.map((f) => f.followedBy);
+  //   },
+  // }),
 
   mutualFollowers: t.prismaField({
     type: [UserNode],
@@ -966,6 +1185,70 @@ builder.prismaObjectFields(UserNode, (t) => ({
 }));
 
 builder.queryFields((t) => ({
+  userFollowings: t.prismaConnection({
+    type: UserNode,
+    cursor: "id",
+
+    args: {
+      userId: t.arg.id({ required: true }),
+    },
+
+    resolve: async (query, _root, args, _ctx) => {
+      return await prisma.user.findMany({
+        ...query,
+        where: {
+          following: {
+            none: {
+              followingId: args.userId,
+            },
+          },
+        },
+      });
+    },
+  }),
+
+  viewer: t.prismaField({
+    type: AuthenticatedViewer,
+    nullable: true,
+    args: {
+      id: t.arg.id({ required: true }),
+    },
+    resolve: (query, _root, args) => {
+      return prisma.user.findUnique({
+        ...query,
+        where: {
+          id: args.id,
+        },
+      });
+    },
+  }),
+
+  publicProfile: t.prismaField({
+    type: PublicProfile,
+    nullable: true,
+    args: {
+      userId: t.arg.id({ required: true }),
+    },
+    resolve: (query, _root, args) => {
+      return prisma.user.findUnique({
+        ...query,
+        where: {
+          id: args.userId,
+        },
+      });
+    },
+  }),
+
+  recentMessagesWithAuthors: t.prismaField({
+    type: [MessageWithAuthor],
+    resolve: (query) => {
+      return prisma.message.findMany({
+        ...query,
+        orderBy: { createdAt: "desc" },
+      });
+    },
+  }),
+
   messages: t.prismaField({
     type: [MessageNode],
     resolve: (query, _root) => {
