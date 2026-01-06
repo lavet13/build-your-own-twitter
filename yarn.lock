@@ -1454,6 +1454,11 @@
   resolved "https://registry.yarnpkg.com/@pothos/plugin-relay/-/plugin-relay-4.6.2.tgz#f4471f6786f0cf856a2dea08834c091dda03b12d"
   integrity sha512-9aweCv9T53z4+CmE+JF8QoXeAEd+wT/rZflZNzrvH6ln2Lj6qy/EVEcL5BMr6en3/IYHH+ROyHAAsy12t4uIUQ==
 
+"@pothos/plugin-scope-auth@^4.1.6":
+  version "4.1.6"
+  resolved "https://registry.yarnpkg.com/@pothos/plugin-scope-auth/-/plugin-scope-auth-4.1.6.tgz#8cc09325084bbac47e30ebba901a90a413c4ad58"
+  integrity sha512-OuVrDiIf03VrExT3sgyt6YHYuFdUbJ6a6R9cHa01JWbnDUTEag8jFhtstZHou4tB8PkldtUgSspfkhJvFNk6bA==
+
 "@prisma/client@^6.19.0":
   version "6.19.0"
   resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.19.0.tgz#25d5387cbcf1d92f234f6b07d6a1bb787ed71391"
