@@ -525,10 +525,6 @@ export type MessageUncheckedCreateNestedManyWithoutReplyToInput = {
   connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type MessageUpdateOneWithoutRepliesNestedInput = {
   create?: Prisma.XOR<Prisma.MessageCreateWithoutRepliesInput, Prisma.MessageUncheckedCreateWithoutRepliesInput>
   connectOrCreate?: Prisma.MessageCreateOrConnectWithoutRepliesInput

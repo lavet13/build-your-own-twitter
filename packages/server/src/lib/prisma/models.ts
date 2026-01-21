@@ -8,7 +8,12 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/Permission.ts'
+export type * from './models/Role.ts'
+export type * from './models/RolePermission.ts'
+export type * from './models/UserPermission.ts'
 export type * from './models/User.ts'
+export type * from './models/Session.ts'
 export type * from './models/Follow.ts'
 export type * from './models/Profile.ts'
 export type * from './models/Message.ts'

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     // Module & Target
     "module": "ESNext",
@@ -7,7 +8,6 @@
     "lib": [
       "ES2022"
     ],
-
     // File Layout
     "outDir": "./dist",
     // Output Options
@@ -47,6 +47,7 @@
   },
   "include": [
     "src/**/*",
+    "environments.d.ts",
     "prisma.config.ts"
   ],
   "exclude": [

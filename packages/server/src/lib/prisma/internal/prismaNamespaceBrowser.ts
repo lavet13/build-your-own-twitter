@@ -49,7 +49,12 @@ export const AnyNull = runtime.objectEnumValues.instances.AnyNull
 
 
 export const ModelName = {
+  Permission: 'Permission',
+  Role: 'Role',
+  RolePermission: 'RolePermission',
+  UserPermission: 'UserPermission',
   User: 'User',
+  Session: 'Session',
   Follow: 'Follow',
   Profile: 'Profile',
   Message: 'Message'
@@ -71,17 +76,77 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const PermissionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+} as const
+
+export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+export const RoleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
+
+
+export const RolePermissionScalarFieldEnum = {
+  roleId: 'roleId',
+  permissionId: 'permissionId',
+  grantedAt: 'grantedAt'
+} as const
+
+export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
+
+
+export const UserPermissionScalarFieldEnum = {
+  userId: 'userId',
+  permissionId: 'permissionId',
+  grantedAt: 'grantedAt',
+  grantedBy: 'grantedBy'
+} as const
+
+export type UserPermissionScalarFieldEnum = (typeof UserPermissionScalarFieldEnum)[keyof typeof UserPermissionScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
+  password: 'password',
   username: 'username',
   displayName: 'displayName',
-  deletedAt: 'deletedAt',
+  roleId: 'roleId',
+  refreshTokenVersion: 'refreshTokenVersion',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const SessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  refreshToken: 'refreshToken',
+  tokenVersion: 'tokenVersion',
+  deviceName: 'deviceName',
+  deviceId: 'deviceId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt',
+  lastUsedAt: 'lastUsedAt'
+} as const
+
+export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
 
 
 export const FollowScalarFieldEnum = {

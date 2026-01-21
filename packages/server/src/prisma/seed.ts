@@ -2,13 +2,38 @@ import { prisma } from "@/db";
 import type { Prisma } from "@/lib/prisma/client";
 import { parseArgs } from "node:util";
 
+const basicRoleUser: Prisma.RoleCreateNestedOneWithoutUsersInput = {
+  connectOrCreate: {
+    create: {
+      name: "USER",
+      description: "Basic user",
+    },
+    where: {
+      name: "USER",
+    },
+  },
+};
+
 const users: Prisma.UserCreateInput[] = [
-  { username: "Alice", email: "alice@prisma.io" },
+  {
+    username: "Alice",
+    email: "alice@prisma.io",
+    password: "password",
+    role: basicRoleUser,
+  },
   {
     username: "Nilu",
     email: "nilu@prisma.io",
+    password: "password",
+    role: basicRoleUser,
   },
-  { username: "Bob", email: "bob@prisma.io", displayName: "Bob Smith" },
+  {
+    username: "Bob",
+    email: "bob@prisma.io",
+    displayName: "Bob Smith",
+    password: "password",
+    role: basicRoleUser,
+  },
 ];
 
 const aliceMessages = [

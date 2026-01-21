@@ -29,8 +29,8 @@ export * from "./enums.ts"
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more Permissions
+ * const permissions = await prisma.permission.findMany()
  * ```
  * 
  * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
@@ -45,10 +45,35 @@ path.join(__dirname, "query_engine-windows.dll.node")
 path.join(process.cwd(), "src/lib/prisma/query_engine-windows.dll.node")
 
 /**
+ * Model Permission
+ * 
+ */
+export type Permission = Prisma.PermissionModel
+/**
+ * Model Role
+ * 
+ */
+export type Role = Prisma.RoleModel
+/**
+ * Model RolePermission
+ * 
+ */
+export type RolePermission = Prisma.RolePermissionModel
+/**
+ * Model UserPermission
+ * 
+ */
+export type UserPermission = Prisma.UserPermissionModel
+/**
  * Model User
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Session
+ * 
+ */
+export type Session = Prisma.SessionModel
 /**
  * Model Follow
  * 

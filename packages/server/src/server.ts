@@ -3,15 +3,21 @@ import { createServer } from "node:http";
 import { Socket } from "node:net";
 import { createYoga } from "graphql-yoga";
 import { schema } from "@/schema";
-import { createContext } from "@/types";
+import { createContext } from "@/context";
 import { useDisableIntrospection } from "@graphql-yoga/plugin-disable-introspection";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
+import { useCookies } from "@whatwg-node/server-plugin-cookies";
+import { useAutoRefreshTokens } from "@/plugins/use-auto-refresh-tokens";
 
 const yoga = createYoga({
   schema: schema,
   context: createContext,
-  plugins: [process.env.NODE_ENV === "production" && useDisableIntrospection()],
+  plugins: [
+    process.env.NODE_ENV === "production" && useDisableIntrospection(),
+    useCookies(),
+    useAutoRefreshTokens,
+  ],
   graphiql: {
     subscriptionsProtocol: "WS",
   },

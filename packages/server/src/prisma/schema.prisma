@@ -21,23 +21,110 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Permission {
+  id          String  @id @default(cuid())
+  name        String  @unique // "post:delete", "user:ban"
+  description String?
+
+  isActive     Boolean   @default(true) // can disable without deleting
+  createdAt    DateTime  @default(now())
+
+  users UserPermission[]
+  roles RolePermission[]
+
+  @@index([name])
+  @@index([isActive])
+}
+
+model Role {
+  id          String  @id @default(cuid())
+  name        String  @unique // "ADMIN", "MODERATOR", "USER"
+  description String?
+
+  permissions RolePermission[]
+  users       User[]
+
+  createdAt DateTime @default(now())
+}
+
+model RolePermission {
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  grantedAt DateTime @default(now())
+
+  @@id([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model UserPermission {
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  grantedAt DateTime @default(now())
+  grantedBy String? // Admin who granted the permission
+
+  @@id([userId, permissionId])
+  @@index([userId])
+  @@index([permissionId])
+}
+
 model User {
-  id          String    @id @default(cuid())
-  email       String    @unique
+  id          String  @id @default(cuid())
+  email       String  @unique
+  password    String
   username    String?
   displayName String?
-  deletedAt   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  // User belongs to one role
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  // Direct permissions (user-specific overrides)
+  directPermissions UserPermission[]
+
+  refreshTokenVersion Int       @default(1)
+  sessions            Session[]
 
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   profile          Profile?
+  followedBy       Follow[]  @relation("followedBy") // Users who follow me
+  following        Follow[]  @relation("following") // Users I follow
 
-  followedBy Follow[] @relation("followedBy") // Users who follow me
-  following  Follow[] @relation("following") // Users I follow
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([username])
+}
+
+model Session {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  refreshToken String @unique
+  tokenVersion Int // Matches user.refreshTokenVersion when created
+
+  deviceName String?
+  deviceId   String?
+  ipAddress  String?
+  userAgent  String?
+
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([refreshToken])
 }
 
 model Follow {
