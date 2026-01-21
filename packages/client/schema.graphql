@@ -51,10 +51,15 @@ type DirectMessage implements MessageBase {
   hasReplies: Boolean
   id: ID
   isRead: Boolean
+  readAt: DateTime
   receiver: User
+  recentReply(after: DateTime!): String
+  replies: [MessageBase!]
   repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageBaseRepliesConnectionSimpleConnection
   replyCount: Int!
   sender: User
+  senderDisplayName: String
+  senderInfo(includeEmail: Boolean = false): String
 }
 
 type Follow implements Node {
@@ -93,9 +98,12 @@ interface MessageBase {
   createdAt: DateTime
   id: ID
   isRead: Boolean
+  readAt: DateTime
   receiver: User
   repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageBaseRepliesConnectionSimpleConnection
   sender: User
+  senderDisplayName: String
+  senderInfo(includeEmail: Boolean = false): String
 }
 
 type MessageBaseRepliesConnectionSimpleConnection {
@@ -220,10 +228,13 @@ type ReplyMessage implements MessageBase {
   id: ID
   isNestedReply: Boolean
   isRead: Boolean
+  readAt: DateTime
   receiver: User
   repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageBaseRepliesConnectionSimpleConnection
   replyTo: MessageBase
   sender: User
+  senderDisplayName: String
+  senderInfo(includeEmail: Boolean = false): String
 }
 
 type SendMessageResult {
