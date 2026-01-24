@@ -1157,7 +1157,7 @@ export const UserPermissionScalarFieldEnum = {
   userId: 'userId',
   permissionId: 'permissionId',
   grantedAt: 'grantedAt',
-  grantedBy: 'grantedBy'
+  grantedById: 'grantedById'
 } as const
 
 export type UserPermissionScalarFieldEnum = (typeof UserPermissionScalarFieldEnum)[keyof typeof UserPermissionScalarFieldEnum]

@@ -1,16 +1,12 @@
 import { prisma } from "@/db";
 import type { Prisma } from "@/lib/prisma/client";
 import { parseArgs } from "node:util";
+import { RoleName } from "./permission-definitions";
+import { grantUserPermissions, seedAllPermissions } from "./seed-permissions";
 
 const basicRoleUser: Prisma.RoleCreateNestedOneWithoutUsersInput = {
-  connectOrCreate: {
-    create: {
-      name: "USER",
-      description: "Basic user",
-    },
-    where: {
-      name: "USER",
-    },
+  connect: {
+    name: RoleName.USER,
   },
 };
 
@@ -71,13 +67,23 @@ async function main() {
     case "development": {
       console.log("------Start seeding(OMAYGOT)------");
 
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Step 1: Seed Permissions & Roles
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      await seedAllPermissions();
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Step 2: Clear existing data
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       const deleteMessages = prisma.message.deleteMany();
       const deleteFollows = prisma.follow.deleteMany();
       const deleteProfiles = prisma.profile.deleteMany();
+      const deleteSessions = prisma.session.deleteMany();
       const deleteUsers = prisma.user.deleteMany();
 
       await prisma.$transaction([
         deleteMessages,
+        deleteSessions,
         deleteUsers,
         deleteFollows,
         deleteProfiles,
@@ -85,6 +91,9 @@ async function main() {
 
       console.log("Cleared existing data");
 
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Step 3: Create users with roles
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       const createdUsers: Prisma.UserModel[] = [];
       for (const u of users) {
         const user = await prisma.user.create({
@@ -93,6 +102,56 @@ async function main() {
         createdUsers.push(user);
         console.log(`Created user with id: ${user.id} (${user.username})`);
       }
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Step 4: Create an Admin user
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      const adminUser = await prisma.user.create({
+        data: {
+          username: "Admin",
+          email: "admin@prisma.io",
+          displayName: "System Administrator",
+          password: "admin123",
+          role: {
+            connect: {
+              name: RoleName.ADMIN,
+            },
+          },
+        },
+      });
+      createdUsers.push(adminUser);
+      console.log(`✨ Created ADMIN user: ${adminUser.username}`);
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Step 5: Grant direct permissions to specific users
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      //
+      // She can delete any message and view emails
+
+      const [alice] = createdUsers;
+      if (alice) {
+        await grantUserPermissions(
+          alice.id,
+          [
+            "message:delete:any", // Can delete any message
+            "user:view:email", // Can view user emails
+          ],
+          adminUser.id
+        );
+        console.log(`  ⭐ Granted moderator permissions to ${alice.username}`);
+      }
+
+      const nilu = createdUsers[1];
+      if (nilu) {
+        await grantUserPermissions(nilu.id, ["profile:view:any"], adminUser.id);
+        console.log(
+          `  ⭐ Granted profile admin permissions to ${nilu.username}`
+        );
+      }
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Step 6: Create profiles
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
       for (const user of createdUsers) {
         await prisma.profile.create({
@@ -104,6 +163,9 @@ async function main() {
         console.log(`Created profile for ${user.username}`);
       }
 
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Step 7: Create follow relationships & messages
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       if (createdUsers.length >= 3) {
         const [alice, nilu, bob] = createdUsers;
 
@@ -142,7 +204,6 @@ async function main() {
           },
         });
         console.log(`${bob?.username} follows ${alice?.username}`);
-
         await prisma.follow.create({
           data: {
             followingId: bob!.id,
@@ -276,6 +337,8 @@ async function main() {
       }
 
       const userCount = await prisma.user.count();
+      const roleCount = await prisma.role.count();
+      const permissionCount = await prisma.permission.count();
       const profileCount = await prisma.profile.count();
       const messageCount = await prisma.message.count();
       const followCount = await prisma.follow.count();
@@ -284,14 +347,42 @@ async function main() {
           replyToId: { not: null },
         },
       });
+      const directPermissionCount = await prisma.userPermission.count({
+        where: {
+          grantedById: {
+            not: null,
+          },
+        },
+      });
 
-      console.log("\n------Seeding Summary------");
-      console.log(`Users created: ${userCount}`);
-      console.log(`Profiles created: ${profileCount}`);
-      console.log(`Messages created: ${messageCount}`);
+      console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("📊 Seeding Summary");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log(`\n🔐 Authorization:`);
+      console.log(`  Roles: ${roleCount}`);
+      console.log(`  Permissions: ${permissionCount}`);
+      console.log(`  Direct permission grants: ${directPermissionCount}`);
+      console.log(`\n👥 Users:`);
+      console.log(`  Total users: ${userCount}`);
+      console.log(`  - Regular users: ${userCount - 1}`);
+      console.log(`  - Admin users: 1`);
+      console.log(`  Profiles: ${profileCount}`);
+      console.log(`\n💬 Content:`);
+      console.log(`  Messages: ${messageCount}`);
       console.log(`  - Replies: ${replyCount}`);
-      console.log(`Follow relationships: ${followCount}`);
-      console.log("------Seeding finished. Sigh...------");
+      console.log(`  Follow relationships: ${followCount}`);
+
+      console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("🎉 Seeding Complete!");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+      console.log("\n💡 Debug Tip:");
+      console.log("   To inspect user permissions, use:");
+      console.log(
+        "   import { debugUserPermissions } from './seed-permissions';"
+      );
+      console.log(`   await debugUserPermissions('${alice?.id}');\n`);
+
       break;
     }
     case "test": {

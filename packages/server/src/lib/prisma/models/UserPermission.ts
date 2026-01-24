@@ -28,21 +28,21 @@ export type UserPermissionMinAggregateOutputType = {
   userId: string | null
   permissionId: string | null
   grantedAt: Date | null
-  grantedBy: string | null
+  grantedById: string | null
 }
 
 export type UserPermissionMaxAggregateOutputType = {
   userId: string | null
   permissionId: string | null
   grantedAt: Date | null
-  grantedBy: string | null
+  grantedById: string | null
 }
 
 export type UserPermissionCountAggregateOutputType = {
   userId: number
   permissionId: number
   grantedAt: number
-  grantedBy: number
+  grantedById: number
   _all: number
 }
 
@@ -51,21 +51,21 @@ export type UserPermissionMinAggregateInputType = {
   userId?: true
   permissionId?: true
   grantedAt?: true
-  grantedBy?: true
+  grantedById?: true
 }
 
 export type UserPermissionMaxAggregateInputType = {
   userId?: true
   permissionId?: true
   grantedAt?: true
-  grantedBy?: true
+  grantedById?: true
 }
 
 export type UserPermissionCountAggregateInputType = {
   userId?: true
   permissionId?: true
   grantedAt?: true
-  grantedBy?: true
+  grantedById?: true
   _all?: true
 }
 
@@ -145,7 +145,7 @@ export type UserPermissionGroupByOutputType = {
   userId: string
   permissionId: string
   grantedAt: Date
-  grantedBy: string | null
+  grantedById: string | null
   _count: UserPermissionCountAggregateOutputType | null
   _min: UserPermissionMinAggregateOutputType | null
   _max: UserPermissionMaxAggregateOutputType | null
@@ -173,18 +173,20 @@ export type UserPermissionWhereInput = {
   userId?: Prisma.StringFilter<"UserPermission"> | string
   permissionId?: Prisma.StringFilter<"UserPermission"> | string
   grantedAt?: Prisma.DateTimeFilter<"UserPermission"> | Date | string
-  grantedBy?: Prisma.StringNullableFilter<"UserPermission"> | string | null
+  grantedById?: Prisma.StringNullableFilter<"UserPermission"> | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   permission?: Prisma.XOR<Prisma.PermissionScalarRelationFilter, Prisma.PermissionWhereInput>
+  grantedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type UserPermissionOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
-  grantedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  grantedById?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   permission?: Prisma.PermissionOrderByWithRelationInput
+  grantedBy?: Prisma.UserOrderByWithRelationInput
 }
 
 export type UserPermissionWhereUniqueInput = Prisma.AtLeast<{
@@ -195,16 +197,17 @@ export type UserPermissionWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.StringFilter<"UserPermission"> | string
   permissionId?: Prisma.StringFilter<"UserPermission"> | string
   grantedAt?: Prisma.DateTimeFilter<"UserPermission"> | Date | string
-  grantedBy?: Prisma.StringNullableFilter<"UserPermission"> | string | null
+  grantedById?: Prisma.StringNullableFilter<"UserPermission"> | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   permission?: Prisma.XOR<Prisma.PermissionScalarRelationFilter, Prisma.PermissionWhereInput>
+  grantedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "userId_permissionId">
 
 export type UserPermissionOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
-  grantedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  grantedById?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserPermissionCountOrderByAggregateInput
   _max?: Prisma.UserPermissionMaxOrderByAggregateInput
   _min?: Prisma.UserPermissionMinOrderByAggregateInput
@@ -217,54 +220,53 @@ export type UserPermissionScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringWithAggregatesFilter<"UserPermission"> | string
   permissionId?: Prisma.StringWithAggregatesFilter<"UserPermission"> | string
   grantedAt?: Prisma.DateTimeWithAggregatesFilter<"UserPermission"> | Date | string
-  grantedBy?: Prisma.StringNullableWithAggregatesFilter<"UserPermission"> | string | null
+  grantedById?: Prisma.StringNullableWithAggregatesFilter<"UserPermission"> | string | null
 }
 
 export type UserPermissionCreateInput = {
   grantedAt?: Date | string
-  grantedBy?: string | null
   user: Prisma.UserCreateNestedOneWithoutDirectPermissionsInput
   permission: Prisma.PermissionCreateNestedOneWithoutUsersInput
+  grantedBy?: Prisma.UserCreateNestedOneWithoutPermissionsGrantedInput
 }
 
 export type UserPermissionUncheckedCreateInput = {
   userId: string
   permissionId: string
   grantedAt?: Date | string
-  grantedBy?: string | null
+  grantedById?: string | null
 }
 
 export type UserPermissionUpdateInput = {
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutDirectPermissionsNestedInput
   permission?: Prisma.PermissionUpdateOneRequiredWithoutUsersNestedInput
+  grantedBy?: Prisma.UserUpdateOneWithoutPermissionsGrantedNestedInput
 }
 
 export type UserPermissionUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionCreateManyInput = {
   userId: string
   permissionId: string
   grantedAt?: Date | string
-  grantedBy?: string | null
+  grantedById?: string | null
 }
 
 export type UserPermissionUpdateManyMutationInput = {
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionListRelationFilter = {
@@ -286,21 +288,21 @@ export type UserPermissionCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
-  grantedBy?: Prisma.SortOrder
+  grantedById?: Prisma.SortOrder
 }
 
 export type UserPermissionMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
-  grantedBy?: Prisma.SortOrder
+  grantedById?: Prisma.SortOrder
 }
 
 export type UserPermissionMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
-  grantedBy?: Prisma.SortOrder
+  grantedById?: Prisma.SortOrder
 }
 
 export type UserPermissionCreateNestedManyWithoutPermissionInput = {
@@ -352,10 +354,24 @@ export type UserPermissionCreateNestedManyWithoutUserInput = {
   connect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
 }
 
+export type UserPermissionCreateNestedManyWithoutGrantedByInput = {
+  create?: Prisma.XOR<Prisma.UserPermissionCreateWithoutGrantedByInput, Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput> | Prisma.UserPermissionCreateWithoutGrantedByInput[] | Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput[]
+  connectOrCreate?: Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput | Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput[]
+  createMany?: Prisma.UserPermissionCreateManyGrantedByInputEnvelope
+  connect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+}
+
 export type UserPermissionUncheckedCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.UserPermissionCreateWithoutUserInput, Prisma.UserPermissionUncheckedCreateWithoutUserInput> | Prisma.UserPermissionCreateWithoutUserInput[] | Prisma.UserPermissionUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.UserPermissionCreateOrConnectWithoutUserInput | Prisma.UserPermissionCreateOrConnectWithoutUserInput[]
   createMany?: Prisma.UserPermissionCreateManyUserInputEnvelope
+  connect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+}
+
+export type UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput = {
+  create?: Prisma.XOR<Prisma.UserPermissionCreateWithoutGrantedByInput, Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput> | Prisma.UserPermissionCreateWithoutGrantedByInput[] | Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput[]
+  connectOrCreate?: Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput | Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput[]
+  createMany?: Prisma.UserPermissionCreateManyGrantedByInputEnvelope
   connect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
 }
 
@@ -373,6 +389,20 @@ export type UserPermissionUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.UserPermissionScalarWhereInput | Prisma.UserPermissionScalarWhereInput[]
 }
 
+export type UserPermissionUpdateManyWithoutGrantedByNestedInput = {
+  create?: Prisma.XOR<Prisma.UserPermissionCreateWithoutGrantedByInput, Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput> | Prisma.UserPermissionCreateWithoutGrantedByInput[] | Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput[]
+  connectOrCreate?: Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput | Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput[]
+  upsert?: Prisma.UserPermissionUpsertWithWhereUniqueWithoutGrantedByInput | Prisma.UserPermissionUpsertWithWhereUniqueWithoutGrantedByInput[]
+  createMany?: Prisma.UserPermissionCreateManyGrantedByInputEnvelope
+  set?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  disconnect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  delete?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  connect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  update?: Prisma.UserPermissionUpdateWithWhereUniqueWithoutGrantedByInput | Prisma.UserPermissionUpdateWithWhereUniqueWithoutGrantedByInput[]
+  updateMany?: Prisma.UserPermissionUpdateManyWithWhereWithoutGrantedByInput | Prisma.UserPermissionUpdateManyWithWhereWithoutGrantedByInput[]
+  deleteMany?: Prisma.UserPermissionScalarWhereInput | Prisma.UserPermissionScalarWhereInput[]
+}
+
 export type UserPermissionUncheckedUpdateManyWithoutUserNestedInput = {
   create?: Prisma.XOR<Prisma.UserPermissionCreateWithoutUserInput, Prisma.UserPermissionUncheckedCreateWithoutUserInput> | Prisma.UserPermissionCreateWithoutUserInput[] | Prisma.UserPermissionUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.UserPermissionCreateOrConnectWithoutUserInput | Prisma.UserPermissionCreateOrConnectWithoutUserInput[]
@@ -387,16 +417,30 @@ export type UserPermissionUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.UserPermissionScalarWhereInput | Prisma.UserPermissionScalarWhereInput[]
 }
 
+export type UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput = {
+  create?: Prisma.XOR<Prisma.UserPermissionCreateWithoutGrantedByInput, Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput> | Prisma.UserPermissionCreateWithoutGrantedByInput[] | Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput[]
+  connectOrCreate?: Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput | Prisma.UserPermissionCreateOrConnectWithoutGrantedByInput[]
+  upsert?: Prisma.UserPermissionUpsertWithWhereUniqueWithoutGrantedByInput | Prisma.UserPermissionUpsertWithWhereUniqueWithoutGrantedByInput[]
+  createMany?: Prisma.UserPermissionCreateManyGrantedByInputEnvelope
+  set?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  disconnect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  delete?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  connect?: Prisma.UserPermissionWhereUniqueInput | Prisma.UserPermissionWhereUniqueInput[]
+  update?: Prisma.UserPermissionUpdateWithWhereUniqueWithoutGrantedByInput | Prisma.UserPermissionUpdateWithWhereUniqueWithoutGrantedByInput[]
+  updateMany?: Prisma.UserPermissionUpdateManyWithWhereWithoutGrantedByInput | Prisma.UserPermissionUpdateManyWithWhereWithoutGrantedByInput[]
+  deleteMany?: Prisma.UserPermissionScalarWhereInput | Prisma.UserPermissionScalarWhereInput[]
+}
+
 export type UserPermissionCreateWithoutPermissionInput = {
   grantedAt?: Date | string
-  grantedBy?: string | null
   user: Prisma.UserCreateNestedOneWithoutDirectPermissionsInput
+  grantedBy?: Prisma.UserCreateNestedOneWithoutPermissionsGrantedInput
 }
 
 export type UserPermissionUncheckedCreateWithoutPermissionInput = {
   userId: string
   grantedAt?: Date | string
-  grantedBy?: string | null
+  grantedById?: string | null
 }
 
 export type UserPermissionCreateOrConnectWithoutPermissionInput = {
@@ -432,19 +476,19 @@ export type UserPermissionScalarWhereInput = {
   userId?: Prisma.StringFilter<"UserPermission"> | string
   permissionId?: Prisma.StringFilter<"UserPermission"> | string
   grantedAt?: Prisma.DateTimeFilter<"UserPermission"> | Date | string
-  grantedBy?: Prisma.StringNullableFilter<"UserPermission"> | string | null
+  grantedById?: Prisma.StringNullableFilter<"UserPermission"> | string | null
 }
 
 export type UserPermissionCreateWithoutUserInput = {
   grantedAt?: Date | string
-  grantedBy?: string | null
   permission: Prisma.PermissionCreateNestedOneWithoutUsersInput
+  grantedBy?: Prisma.UserCreateNestedOneWithoutPermissionsGrantedInput
 }
 
 export type UserPermissionUncheckedCreateWithoutUserInput = {
   permissionId: string
   grantedAt?: Date | string
-  grantedBy?: string | null
+  grantedById?: string | null
 }
 
 export type UserPermissionCreateOrConnectWithoutUserInput = {
@@ -454,6 +498,28 @@ export type UserPermissionCreateOrConnectWithoutUserInput = {
 
 export type UserPermissionCreateManyUserInputEnvelope = {
   data: Prisma.UserPermissionCreateManyUserInput | Prisma.UserPermissionCreateManyUserInput[]
+  skipDuplicates?: boolean
+}
+
+export type UserPermissionCreateWithoutGrantedByInput = {
+  grantedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutDirectPermissionsInput
+  permission: Prisma.PermissionCreateNestedOneWithoutUsersInput
+}
+
+export type UserPermissionUncheckedCreateWithoutGrantedByInput = {
+  userId: string
+  permissionId: string
+  grantedAt?: Date | string
+}
+
+export type UserPermissionCreateOrConnectWithoutGrantedByInput = {
+  where: Prisma.UserPermissionWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserPermissionCreateWithoutGrantedByInput, Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput>
+}
+
+export type UserPermissionCreateManyGrantedByInputEnvelope = {
+  data: Prisma.UserPermissionCreateManyGrantedByInput | Prisma.UserPermissionCreateManyGrantedByInput[]
   skipDuplicates?: boolean
 }
 
@@ -473,52 +539,92 @@ export type UserPermissionUpdateManyWithWhereWithoutUserInput = {
   data: Prisma.XOR<Prisma.UserPermissionUpdateManyMutationInput, Prisma.UserPermissionUncheckedUpdateManyWithoutUserInput>
 }
 
+export type UserPermissionUpsertWithWhereUniqueWithoutGrantedByInput = {
+  where: Prisma.UserPermissionWhereUniqueInput
+  update: Prisma.XOR<Prisma.UserPermissionUpdateWithoutGrantedByInput, Prisma.UserPermissionUncheckedUpdateWithoutGrantedByInput>
+  create: Prisma.XOR<Prisma.UserPermissionCreateWithoutGrantedByInput, Prisma.UserPermissionUncheckedCreateWithoutGrantedByInput>
+}
+
+export type UserPermissionUpdateWithWhereUniqueWithoutGrantedByInput = {
+  where: Prisma.UserPermissionWhereUniqueInput
+  data: Prisma.XOR<Prisma.UserPermissionUpdateWithoutGrantedByInput, Prisma.UserPermissionUncheckedUpdateWithoutGrantedByInput>
+}
+
+export type UserPermissionUpdateManyWithWhereWithoutGrantedByInput = {
+  where: Prisma.UserPermissionScalarWhereInput
+  data: Prisma.XOR<Prisma.UserPermissionUpdateManyMutationInput, Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByInput>
+}
+
 export type UserPermissionCreateManyPermissionInput = {
   userId: string
   grantedAt?: Date | string
-  grantedBy?: string | null
+  grantedById?: string | null
 }
 
 export type UserPermissionUpdateWithoutPermissionInput = {
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutDirectPermissionsNestedInput
+  grantedBy?: Prisma.UserUpdateOneWithoutPermissionsGrantedNestedInput
 }
 
 export type UserPermissionUncheckedUpdateWithoutPermissionInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionUncheckedUpdateManyWithoutPermissionInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionCreateManyUserInput = {
   permissionId: string
   grantedAt?: Date | string
-  grantedBy?: string | null
+  grantedById?: string | null
+}
+
+export type UserPermissionCreateManyGrantedByInput = {
+  userId: string
+  permissionId: string
+  grantedAt?: Date | string
 }
 
 export type UserPermissionUpdateWithoutUserInput = {
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permission?: Prisma.PermissionUpdateOneRequiredWithoutUsersNestedInput
+  grantedBy?: Prisma.UserUpdateOneWithoutPermissionsGrantedNestedInput
 }
 
 export type UserPermissionUncheckedUpdateWithoutUserInput = {
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionUncheckedUpdateManyWithoutUserInput = {
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  grantedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type UserPermissionUpdateWithoutGrantedByInput = {
+  grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutDirectPermissionsNestedInput
+  permission?: Prisma.PermissionUpdateOneRequiredWithoutUsersNestedInput
+}
+
+export type UserPermissionUncheckedUpdateWithoutGrantedByInput = {
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type UserPermissionUncheckedUpdateManyWithoutGrantedByInput = {
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -527,48 +633,54 @@ export type UserPermissionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   userId?: boolean
   permissionId?: boolean
   grantedAt?: boolean
-  grantedBy?: boolean
+  grantedById?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>
+  grantedBy?: boolean | Prisma.UserPermission$grantedByArgs<ExtArgs>
 }, ExtArgs["result"]["userPermission"]>
 
 export type UserPermissionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   userId?: boolean
   permissionId?: boolean
   grantedAt?: boolean
-  grantedBy?: boolean
+  grantedById?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>
+  grantedBy?: boolean | Prisma.UserPermission$grantedByArgs<ExtArgs>
 }, ExtArgs["result"]["userPermission"]>
 
 export type UserPermissionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   userId?: boolean
   permissionId?: boolean
   grantedAt?: boolean
-  grantedBy?: boolean
+  grantedById?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>
+  grantedBy?: boolean | Prisma.UserPermission$grantedByArgs<ExtArgs>
 }, ExtArgs["result"]["userPermission"]>
 
 export type UserPermissionSelectScalar = {
   userId?: boolean
   permissionId?: boolean
   grantedAt?: boolean
-  grantedBy?: boolean
+  grantedById?: boolean
 }
 
-export type UserPermissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "permissionId" | "grantedAt" | "grantedBy", ExtArgs["result"]["userPermission"]>
+export type UserPermissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "permissionId" | "grantedAt" | "grantedById", ExtArgs["result"]["userPermission"]>
 export type UserPermissionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>
+  grantedBy?: boolean | Prisma.UserPermission$grantedByArgs<ExtArgs>
 }
 export type UserPermissionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>
+  grantedBy?: boolean | Prisma.UserPermission$grantedByArgs<ExtArgs>
 }
 export type UserPermissionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>
+  grantedBy?: boolean | Prisma.UserPermission$grantedByArgs<ExtArgs>
 }
 
 export type $UserPermissionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -576,12 +688,13 @@ export type $UserPermissionPayload<ExtArgs extends runtime.Types.Extensions.Inte
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     permission: Prisma.$PermissionPayload<ExtArgs>
+    grantedBy: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     userId: string
     permissionId: string
     grantedAt: Date
-    grantedBy: string | null
+    grantedById: string | null
   }, ExtArgs["result"]["userPermission"]>
   composites: {}
 }
@@ -978,6 +1091,7 @@ export interface Prisma__UserPermissionClient<T, Null = never, ExtArgs extends r
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   permission<T extends Prisma.PermissionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PermissionDefaultArgs<ExtArgs>>): Prisma.Prisma__PermissionClient<runtime.Types.Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  grantedBy<T extends Prisma.UserPermission$grantedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserPermission$grantedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1010,7 +1124,7 @@ export interface UserPermissionFieldRefs {
   readonly userId: Prisma.FieldRef<"UserPermission", 'String'>
   readonly permissionId: Prisma.FieldRef<"UserPermission", 'String'>
   readonly grantedAt: Prisma.FieldRef<"UserPermission", 'DateTime'>
-  readonly grantedBy: Prisma.FieldRef<"UserPermission", 'String'>
+  readonly grantedById: Prisma.FieldRef<"UserPermission", 'String'>
 }
     
 
@@ -1404,6 +1518,25 @@ export type UserPermissionDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many UserPermissions to delete.
    */
   limit?: number
+}
+
+/**
+ * UserPermission.grantedBy
+ */
+export type UserPermission$grantedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

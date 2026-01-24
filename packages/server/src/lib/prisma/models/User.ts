@@ -258,6 +258,7 @@ export type UserWhereInput = {
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
   directPermissions?: Prisma.UserPermissionListRelationFilter
+  permissionsGranted?: Prisma.UserPermissionListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   sentMessages?: Prisma.MessageListRelationFilter
   receivedMessages?: Prisma.MessageListRelationFilter
@@ -279,6 +280,7 @@ export type UserOrderByWithRelationInput = {
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.RoleOrderByWithRelationInput
   directPermissions?: Prisma.UserPermissionOrderByRelationAggregateInput
+  permissionsGranted?: Prisma.UserPermissionOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   sentMessages?: Prisma.MessageOrderByRelationAggregateInput
   receivedMessages?: Prisma.MessageOrderByRelationAggregateInput
@@ -290,11 +292,11 @@ export type UserOrderByWithRelationInput = {
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   email?: string
+  username?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   password?: Prisma.StringFilter<"User"> | string
-  username?: Prisma.StringNullableFilter<"User"> | string | null
   displayName?: Prisma.StringNullableFilter<"User"> | string | null
   roleId?: Prisma.StringFilter<"User"> | string
   refreshTokenVersion?: Prisma.IntFilter<"User"> | number
@@ -303,13 +305,14 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
   directPermissions?: Prisma.UserPermissionListRelationFilter
+  permissionsGranted?: Prisma.UserPermissionListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   sentMessages?: Prisma.MessageListRelationFilter
   receivedMessages?: Prisma.MessageListRelationFilter
   profile?: Prisma.XOR<Prisma.ProfileNullableScalarRelationFilter, Prisma.ProfileWhereInput> | null
   followedBy?: Prisma.FollowListRelationFilter
   following?: Prisma.FollowListRelationFilter
-}, "id" | "email">
+}, "id" | "email" | "username">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -357,6 +360,7 @@ export type UserCreateInput = {
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
@@ -377,6 +381,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
@@ -397,6 +402,7 @@ export type UserUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
@@ -417,6 +423,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
@@ -476,6 +483,11 @@ export type UserOrderByRelationAggregateInput = {
 export type UserScalarRelationFilter = {
   is?: Prisma.UserWhereInput
   isNot?: Prisma.UserWhereInput
+}
+
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -573,12 +585,28 @@ export type UserCreateNestedOneWithoutDirectPermissionsInput = {
   connect?: Prisma.UserWhereUniqueInput
 }
 
+export type UserCreateNestedOneWithoutPermissionsGrantedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPermissionsGrantedInput, Prisma.UserUncheckedCreateWithoutPermissionsGrantedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPermissionsGrantedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
 export type UserUpdateOneRequiredWithoutDirectPermissionsNestedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutDirectPermissionsInput, Prisma.UserUncheckedCreateWithoutDirectPermissionsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutDirectPermissionsInput
   upsert?: Prisma.UserUpsertWithoutDirectPermissionsInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDirectPermissionsInput, Prisma.UserUpdateWithoutDirectPermissionsInput>, Prisma.UserUncheckedUpdateWithoutDirectPermissionsInput>
+}
+
+export type UserUpdateOneWithoutPermissionsGrantedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPermissionsGrantedInput, Prisma.UserUncheckedCreateWithoutPermissionsGrantedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPermissionsGrantedInput
+  upsert?: Prisma.UserUpsertWithoutPermissionsGrantedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPermissionsGrantedInput, Prisma.UserUpdateWithoutPermissionsGrantedInput>, Prisma.UserUncheckedUpdateWithoutPermissionsGrantedInput>
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -688,6 +716,7 @@ export type UserCreateWithoutRoleInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
@@ -707,6 +736,7 @@ export type UserUncheckedCreateWithoutRoleInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
@@ -768,6 +798,7 @@ export type UserCreateWithoutDirectPermissionsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
@@ -787,6 +818,7 @@ export type UserUncheckedCreateWithoutDirectPermissionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
@@ -798,6 +830,51 @@ export type UserUncheckedCreateWithoutDirectPermissionsInput = {
 export type UserCreateOrConnectWithoutDirectPermissionsInput = {
   where: Prisma.UserWhereUniqueInput
   create: Prisma.XOR<Prisma.UserCreateWithoutDirectPermissionsInput, Prisma.UserUncheckedCreateWithoutDirectPermissionsInput>
+}
+
+export type UserCreateWithoutPermissionsGrantedInput = {
+  id?: string
+  email: string
+  password: string
+  username?: string | null
+  displayName?: string | null
+  refreshTokenVersion?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  role: Prisma.RoleCreateNestedOneWithoutUsersInput
+  directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  followedBy?: Prisma.FollowCreateNestedManyWithoutFollowedByInput
+  following?: Prisma.FollowCreateNestedManyWithoutFollowingInput
+}
+
+export type UserUncheckedCreateWithoutPermissionsGrantedInput = {
+  id?: string
+  email: string
+  password: string
+  username?: string | null
+  displayName?: string | null
+  roleId: string
+  refreshTokenVersion?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  followedBy?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowedByInput
+  following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
+}
+
+export type UserCreateOrConnectWithoutPermissionsGrantedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPermissionsGrantedInput, Prisma.UserUncheckedCreateWithoutPermissionsGrantedInput>
 }
 
 export type UserUpsertWithoutDirectPermissionsInput = {
@@ -822,6 +899,7 @@ export type UserUpdateWithoutDirectPermissionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
@@ -841,6 +919,58 @@ export type UserUncheckedUpdateWithoutDirectPermissionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  followedBy?: Prisma.FollowUncheckedUpdateManyWithoutFollowedByNestedInput
+  following?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
+}
+
+export type UserUpsertWithoutPermissionsGrantedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPermissionsGrantedInput, Prisma.UserUncheckedUpdateWithoutPermissionsGrantedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPermissionsGrantedInput, Prisma.UserUncheckedCreateWithoutPermissionsGrantedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPermissionsGrantedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPermissionsGrantedInput, Prisma.UserUncheckedUpdateWithoutPermissionsGrantedInput>
+}
+
+export type UserUpdateWithoutPermissionsGrantedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshTokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
+  directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  followedBy?: Prisma.FollowUpdateManyWithoutFollowedByNestedInput
+  following?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPermissionsGrantedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string
+  refreshTokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
@@ -861,6 +991,7 @@ export type UserCreateWithoutSessionsInput = {
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
   profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
@@ -880,6 +1011,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
   profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -915,6 +1047,7 @@ export type UserUpdateWithoutSessionsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
   profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
@@ -934,6 +1067,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
   profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -953,6 +1087,7 @@ export type UserCreateWithoutFollowedByInput = {
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
@@ -972,6 +1107,7 @@ export type UserUncheckedCreateWithoutFollowedByInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
@@ -996,6 +1132,7 @@ export type UserCreateWithoutFollowingInput = {
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
@@ -1015,6 +1152,7 @@ export type UserUncheckedCreateWithoutFollowingInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
@@ -1050,6 +1188,7 @@ export type UserUpdateWithoutFollowedByInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
@@ -1069,6 +1208,7 @@ export type UserUncheckedUpdateWithoutFollowedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
@@ -1099,6 +1239,7 @@ export type UserUpdateWithoutFollowingInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
@@ -1118,6 +1259,7 @@ export type UserUncheckedUpdateWithoutFollowingInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
@@ -1137,6 +1279,7 @@ export type UserCreateWithoutProfileInput = {
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
@@ -1156,6 +1299,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
@@ -1191,6 +1335,7 @@ export type UserUpdateWithoutProfileInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
@@ -1210,6 +1355,7 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
@@ -1229,6 +1375,7 @@ export type UserCreateWithoutSentMessagesInput = {
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
   profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
@@ -1248,6 +1395,7 @@ export type UserUncheckedCreateWithoutSentMessagesInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
   profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -1272,6 +1420,7 @@ export type UserCreateWithoutReceivedMessagesInput = {
   deletedAt?: Date | string | null
   role: Prisma.RoleCreateNestedOneWithoutUsersInput
   directPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
@@ -1291,6 +1440,7 @@ export type UserUncheckedCreateWithoutReceivedMessagesInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutGrantedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -1326,6 +1476,7 @@ export type UserUpdateWithoutSentMessagesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
   profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
@@ -1345,6 +1496,7 @@ export type UserUncheckedUpdateWithoutSentMessagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
   profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -1375,6 +1527,7 @@ export type UserUpdateWithoutReceivedMessagesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
@@ -1394,6 +1547,7 @@ export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -1424,6 +1578,7 @@ export type UserUpdateWithoutRoleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
@@ -1443,6 +1598,7 @@ export type UserUncheckedUpdateWithoutRoleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   directPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  permissionsGranted?: Prisma.UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
@@ -1470,6 +1626,7 @@ export type UserUncheckedUpdateManyWithoutRoleInput = {
 
 export type UserCountOutputType = {
   directPermissions: number
+  permissionsGranted: number
   sessions: number
   sentMessages: number
   receivedMessages: number
@@ -1479,6 +1636,7 @@ export type UserCountOutputType = {
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   directPermissions?: boolean | UserCountOutputTypeCountDirectPermissionsArgs
+  permissionsGranted?: boolean | UserCountOutputTypeCountPermissionsGrantedArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
   receivedMessages?: boolean | UserCountOutputTypeCountReceivedMessagesArgs
@@ -1500,6 +1658,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
  * UserCountOutputType without action
  */
 export type UserCountOutputTypeCountDirectPermissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserPermissionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPermissionsGrantedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.UserPermissionWhereInput
 }
 
@@ -1552,6 +1717,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   deletedAt?: boolean
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
   directPermissions?: boolean | Prisma.User$directPermissionsArgs<ExtArgs>
+  permissionsGranted?: boolean | Prisma.User$permissionsGrantedArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   receivedMessages?: boolean | Prisma.User$receivedMessagesArgs<ExtArgs>
@@ -1606,6 +1772,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
   directPermissions?: boolean | Prisma.User$directPermissionsArgs<ExtArgs>
+  permissionsGranted?: boolean | Prisma.User$permissionsGrantedArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   receivedMessages?: boolean | Prisma.User$receivedMessagesArgs<ExtArgs>
@@ -1626,6 +1793,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     role: Prisma.$RolePayload<ExtArgs>
     directPermissions: Prisma.$UserPermissionPayload<ExtArgs>[]
+    permissionsGranted: Prisma.$UserPermissionPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     sentMessages: Prisma.$MessagePayload<ExtArgs>[]
     receivedMessages: Prisma.$MessagePayload<ExtArgs>[]
@@ -2040,6 +2208,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   role<T extends Prisma.RoleDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RoleDefaultArgs<ExtArgs>>): Prisma.Prisma__RoleClient<runtime.Types.Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   directPermissions<T extends Prisma.User$directPermissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$directPermissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  permissionsGranted<T extends Prisma.User$permissionsGrantedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$permissionsGrantedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sentMessages<T extends Prisma.User$sentMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   receivedMessages<T extends Prisma.User$receivedMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$receivedMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2484,6 +2653,30 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
  * User.directPermissions
  */
 export type User$directPermissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserPermission
+   */
+  select?: Prisma.UserPermissionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserPermission
+   */
+  omit?: Prisma.UserPermissionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserPermissionInclude<ExtArgs> | null
+  where?: Prisma.UserPermissionWhereInput
+  orderBy?: Prisma.UserPermissionOrderByWithRelationInput | Prisma.UserPermissionOrderByWithRelationInput[]
+  cursor?: Prisma.UserPermissionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserPermissionScalarFieldEnum | Prisma.UserPermissionScalarFieldEnum[]
+}
+
+/**
+ * User.permissionsGranted
+ */
+export type User$permissionsGrantedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the UserPermission
    */

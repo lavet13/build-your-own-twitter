@@ -13,7 +13,13 @@
     "db:migrate": "npx prisma migrate dev",
     "db:reset": "npx prisma migrate reset",
     "db:studio": "npx prisma studio",
-    "db:seed": "npx prisma db seed -- --environment development"
+    "db:seed": "npx prisma db seed -- --environment development",
+    "db:permissions": "tsx ./src/prisma/debug-permissions.ts",
+    "db:permissions:stats": "tsx ./src/prisma/debug-permissions.ts --stats",
+    "db:permissions:registry": "tsx ./src/prisma/debug-permissions.ts --registry",
+    "db:permissions:all": "tsx ./src/prisma/debug-permissions.ts --all",
+    "db:permissions:user": "tsx ./src/prisma/debug-permissions.ts --user",
+    "db:permissions:admin": "tsx ./src/prisma/debug-permissions.ts --admin"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

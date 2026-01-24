@@ -26,8 +26,8 @@ model Permission {
   name        String  @unique // "post:delete", "user:ban"
   description String?
 
-  isActive     Boolean   @default(true) // can disable without deleting
-  createdAt    DateTime  @default(now())
+  isActive  Boolean  @default(true) // can disable without deleting
+  createdAt DateTime @default(now())
 
   users UserPermission[]
   roles RolePermission[]
@@ -63,24 +63,26 @@ model RolePermission {
 
 model UserPermission {
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation("UserPermissions", fields: [userId], references: [id])
 
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id])
 
-  grantedAt DateTime @default(now())
-  grantedBy String? // Admin who granted the permission
+  grantedAt   DateTime @default(now())
+  grantedById String? // Admin who granted the permission
+  grantedBy   User?    @relation("GrantedPermissions", fields: [grantedById], references: [id], onDelete: SetNull)
 
   @@id([userId, permissionId])
   @@index([userId])
   @@index([permissionId])
+  @@index([grantedById])
 }
 
 model User {
   id          String  @id @default(cuid())
   email       String  @unique
   password    String
-  username    String?
+  username    String? @unique
   displayName String?
 
   // User belongs to one role
@@ -88,7 +90,8 @@ model User {
   role   Role   @relation(fields: [roleId], references: [id])
 
   // Direct permissions (user-specific overrides)
-  directPermissions UserPermission[]
+  directPermissions  UserPermission[] @relation("UserPermissions")
+  permissionsGranted UserPermission[] @relation("GrantedPermissions")
 
   refreshTokenVersion Int       @default(1)
   sessions            Session[]
