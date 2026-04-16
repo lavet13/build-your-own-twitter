@@ -16,7 +16,7 @@ const yoga = createYoga({
   plugins: [
     process.env.NODE_ENV === "production" && useDisableIntrospection(),
     useCookies(),
-    useAutoRefreshTokens,
+    useAutoRefreshTokens(),
   ],
   graphiql: {
     subscriptionsProtocol: "WS",

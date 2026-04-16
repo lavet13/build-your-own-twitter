@@ -40,37 +40,29 @@ export type UserWithPermissions = Prisma.UserGetPayload<{
   };
 }>;
 
-export async function getUserWithPermissions(context: Context): Promise<UserWithPermissions | null> {
-  if (context.accessToken) {
-    const payload = verifyAccessToken(context.accessToken);
+export async function getUserWithPermissions(
+  context: Context
+): Promise<UserWithPermissions | null> {
+  if (!context.accessToken) return null;
 
-    if (payload) {
-      return prisma.user.findUnique({
-        where: {
-          id: payload.userId,
-        },
+  const payload = verifyAccessToken(context.accessToken);
+
+  if (!payload) return null;
+
+  return prisma.user.findUnique({
+    where: {
+      id: payload.userId,
+    },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      role: {
         select: {
           id: true,
-          email: true,
-          username: true,
-          role: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              permissions: {
-                select: {
-                  permission: {
-                    select: {
-                      id: true,
-                      name: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          directPermissions: {
+          name: true,
+          description: true,
+          permissions: {
             select: {
               permission: {
                 select: {
@@ -78,14 +70,22 @@ export async function getUserWithPermissions(context: Context): Promise<UserWith
                   name: true,
                 },
               },
-              grantedBy: true,
-              grantedAt: true,
             },
           },
         },
-      });
-    }
-    return null;
-  }
-  return null;
+      },
+      directPermissions: {
+        select: {
+          permission: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          grantedBy: true,
+          grantedAt: true,
+        },
+      },
+    },
+  });
 }

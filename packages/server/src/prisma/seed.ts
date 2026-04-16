@@ -1,8 +1,8 @@
 import { prisma } from "@/db";
 import type { Prisma } from "@/lib/prisma/client";
 import { parseArgs } from "node:util";
-import { RoleName } from "./permission-definitions";
-import { grantUserPermissions, seedAllPermissions } from "./seed-permissions";
+import { RoleName } from "@/prisma/permission-definitions";
+import { grantUserPermissions, seedAllPermissions } from "@/prisma/seed-permissions";
 
 const basicRoleUser: Prisma.RoleCreateNestedOneWithoutUsersInput = {
   connect: {

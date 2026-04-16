@@ -1,11 +1,8 @@
 import type { Plugin } from "graphql-yoga";
-import { refreshTokens } from "@/auth/utils";
-import { cookieOpts } from "@/plugins/utils/use-cookie";
-import { ACCESS_TOKEN_TTL, REFRESH_TOKEN_TTL } from "@/auth/utils";
-import ms from "ms";
+import { deleteAuthTokens, refreshTokens, setAuthTokensInCookies } from "@/auth/utils";
 import { decodeJwt } from "jose";
 
-export const useAutoRefreshTokens: Plugin = {
+export const useAutoRefreshTokens = (): Plugin => ({
   // https://the-guild.dev/graphql/yoga-server/docs/features/envelop-plugins#onrequestparse
   async onRequestParse({ request }) {
     // Skip CORS preflight (OPTIONS never has cookies anyway)
@@ -73,27 +70,16 @@ export const useAutoRefreshTokens: Plugin = {
 
     if (result.success && result.accessToken && result.refreshToken) {
       // Set new tokens in cookies
-      await Promise.all([
-        cookieStore.set({
-          name: "accessToken",
-          value: result.accessToken,
-          ...cookieOpts(ms(ACCESS_TOKEN_TTL)),
-        }),
-        cookieStore.set({
-          name: "refreshToken",
-          value: result.refreshToken,
-          ...cookieOpts(ms(REFRESH_TOKEN_TTL)),
-        }),
-      ]);
+      await setAuthTokensInCookies(cookieStore, {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
       console.log(`[AutoRefresh] Success`);
     } else {
       console.warn(`[AutoRefresh] Failed: ${result.error}`);
 
       // Important: clean up both tokens
-      await Promise.all([
-        cookieStore.delete("accessToken"),
-        cookieStore.delete("refreshToken"),
-      ]);
+      await deleteAuthTokens(cookieStore);
     }
   },
-};
+});
