@@ -1,5 +1,9 @@
 import type { Plugin } from "graphql-yoga";
-import { deleteAuthTokens, refreshTokens, setAuthTokensInCookies } from "@/auth/utils";
+import {
+  deleteAuthTokens,
+  refreshTokens,
+  setAuthTokensInCookies,
+} from "@/auth/utils";
 import { decodeJwt } from "jose";
 
 export const useAutoRefreshTokens = (): Plugin => ({
@@ -60,9 +64,9 @@ export const useAutoRefreshTokens = (): Plugin => ({
       return; // access token looks fine, continue
     }
 
-    // ────────────────────────────────────────────────
+    // ==========================================
     // At this point we decided it's worth trying refresh
-    // ────────────────────────────────────────────────
+    // ==========================================
 
     console.log(`[AutoRefresh] Access token missing/expired → refreshing`);
 

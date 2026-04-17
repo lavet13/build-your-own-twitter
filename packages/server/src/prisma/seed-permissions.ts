@@ -2,10 +2,12 @@ import { prisma } from "@/db";
 import {
   DIRECT_PERMISSIONS,
   getAllPermissionNames,
+  getPermissionByScope,
   PermissionScope,
   RoleName,
   ROLES,
 } from "./permission-definitions";
+import type { Prisma } from "@/lib/prisma/client";
 
 /**
  * Seed all permissions defined in permission-definitions.ts
@@ -32,15 +34,9 @@ export async function seedPermissions() {
   console.log(`✅ Seeded ${DIRECT_PERMISSIONS.length} permissions`);
 
   // Show breakdown by scope
-  const ownCount = DIRECT_PERMISSIONS.filter(
-    (p) => p.scope === PermissionScope.OWN
-  ).length;
-  const publicCount = DIRECT_PERMISSIONS.filter(
-    (p) => p.scope === PermissionScope.PUBLIC
-  ).length;
-  const anyCount = DIRECT_PERMISSIONS.filter(
-    (p) => p.scope === PermissionScope.ANY
-  ).length;
+  const ownCount = getPermissionByScope(PermissionScope.OWN).length;
+  const publicCount = getPermissionByScope(PermissionScope.PUBLIC).length;
+  const anyCount = getPermissionByScope(PermissionScope.ANY).length;
 
   console.log(`  - Own scope: ${ownCount}`);
   console.log(`  - Public scope: ${publicCount}`);
@@ -146,11 +142,14 @@ export async function grantUserPermissions(
     return;
   }
 
-  const userPermissions = permissions.map((p) => ({
-    userId,
-    permissionId: p.id,
-    grantedById: grantedById,
-  }));
+  const userPermissions: Prisma.UserPermissionModel[] = permissions.map(
+    (p) => ({
+      userId,
+      permissionId: p.id,
+      grantedById: grantedById || null,
+      grantedAt: new Date(),
+    })
+  );
 
   await prisma.userPermission.createMany({
     data: userPermissions,
@@ -263,18 +262,21 @@ export async function getPermissionsGrantedBy(adminId: string) {
       grantedById: adminId,
     },
     include: {
+      // the user itself
       user: {
         select: {
           username: true,
           email: true,
         },
       },
+      // the permissions admin has granted
       permission: {
         select: {
           name: true,
           description: true,
         },
       },
+      // admin who granted the user
       grantedBy: {
         select: {
           username: true,
@@ -299,9 +301,10 @@ export async function debugAdminGrants(adminId: string): Promise<void> {
       username: true,
       email: true,
       permissionsGranted: {
-        include: {
+        select: {
           user: {
             select: {
+              id: true,
               username: true,
               email: true,
             },
@@ -330,7 +333,7 @@ export async function debugAdminGrants(adminId: string): Promise<void> {
   const byUser = new Map<string, typeof admin.permissionsGranted>();
 
   admin.permissionsGranted.forEach((grant) => {
-    const userId = grant.userId;
+    const userId = grant.user.id;
     if (!byUser.has(userId)) {
       byUser.set(userId, []);
     }
@@ -356,12 +359,20 @@ export async function debugUserPermissions(userId: string): Promise<void> {
     where: {
       id: userId,
     },
-    include: {
+    select: {
+      username: true,
+      email: true,
       role: {
-        include: {
+        select: {
+          name: true,
           permissions: {
-            include: {
-              permission: true,
+            select: {
+              grantedAt: true,
+              permission: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -370,8 +381,12 @@ export async function debugUserPermissions(userId: string): Promise<void> {
         where: {
           grantedById: { not: null }, // Only active permissions
         },
-        include: {
-          permission: true,
+        select: {
+          permission: {
+            select: {
+              name: true,
+            },
+          },
           grantedBy: {
             select: {
               username: true,
@@ -394,7 +409,10 @@ export async function debugUserPermissions(userId: string): Promise<void> {
   console.log(`\n📦 Role Permissions (${user.role.permissions.length}):`);
 
   // Group by scope for readability
-  const rolePerms = user.role.permissions.map((rp) => rp.permission);
+  const rolePerms = user.role.permissions.map((rp) => ({
+    ...rp.permission,
+    grantedAt: rp.grantedAt,
+  }));
   const ownPerms = rolePerms.filter((p) => p.name.includes(":own"));
   const publicPerms = rolePerms.filter((p) => p.name.includes(":public"));
   const anyPerms = rolePerms.filter((p) => p.name.includes(":any"));
@@ -405,24 +423,30 @@ export async function debugUserPermissions(userId: string): Promise<void> {
       !p.name.includes(":any")
   );
 
+  const printPermission = (permission: { name: string; grantedAt: Date }) => {
+    console.log(
+      `    ✓ ${permission.name}; Granted At: ${permission.grantedAt}`
+    );
+  };
+
   if (ownPerms.length > 0) {
     console.log(`  Own (${ownPerms.length})`);
-    ownPerms.forEach((p) => console.log(`    ✓ ${p.name}`));
+    ownPerms.forEach(printPermission);
   }
 
   if (publicPerms.length > 0) {
     console.log(`  Public (${publicPerms.length}):`);
-    publicPerms.forEach((p) => console.log(`    ✓ ${p.name}`));
+    publicPerms.forEach(printPermission);
   }
 
   if (anyPerms.length > 0) {
     console.log(`  Any (${anyPerms.length}):`);
-    anyPerms.forEach((p) => console.log(`    ✓ ${p.name}`));
+    anyPerms.forEach(printPermission);
   }
 
   if (otherPerms.length > 0) {
     console.log(`  Other (${otherPerms.length}):`);
-    otherPerms.forEach((p) => console.log(`    ✓ ${p.name}`));
+    otherPerms.forEach(printPermission);
   }
 
   if (user.directPermissions.length > 0) {

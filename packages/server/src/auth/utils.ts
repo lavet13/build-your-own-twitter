@@ -425,10 +425,14 @@ export function hasAllPermissions(
 }
 
 /**
- * Check if user has a specific role
+ * Check if user has ANY of the given permissions
  */
-export function hasRole(user: UserWithPermissions, roleName: string): boolean {
-  return user.role?.name === roleName;
+export function hasAnyPermissions(
+  user: UserWithPermissions,
+  ...permissions: string[]
+): boolean {
+  const effectivePerms = getEffectivePermissions(user);
+  return permissions.some((perm) => effectivePerms.has(perm));
 }
 
 /**
@@ -439,4 +443,11 @@ export function hasAnyRole(
   ...roleNames: string[]
 ): boolean {
   return roleNames.some((role) => hasRole(user, role));
+}
+
+/**
+ * Check if user has a specific role
+ */
+export function hasRole(user: UserWithPermissions, roleName: string): boolean {
+  return user.role?.name === roleName;
 }

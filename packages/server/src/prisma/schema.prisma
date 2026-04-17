@@ -51,6 +51,7 @@ model Role {
   createdAt DateTime @default(now())
 }
 
+/// This is a join table between Role and Permission. Nothing fancy.
 model RolePermission {
   roleId String
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -65,6 +66,10 @@ model RolePermission {
   @@index([permissionId])
 }
 
+/// This is the hybrid part. The grantedById field is doing double duty:
+///
+/// If it has a value → this permission was explicitly granted directly to this user by an admin
+/// If it's null → this permission is explicitly revoked from this user
 model UserPermission {
   userId String
   user   User   @relation("UserPermissions", fields: [userId], references: [id])
@@ -73,7 +78,7 @@ model UserPermission {
   permission   Permission @relation(fields: [permissionId], references: [id])
 
   grantedAt   DateTime @default(now())
-  grantedById String? // Admin who granted the permission
+  grantedById String? // Admin who granted the permission, NULL means REVOKED; non-null means who granted it
   grantedBy   User?    @relation("GrantedPermissions", fields: [grantedById], references: [id], onDelete: SetNull)
 
   @@id([userId, permissionId])

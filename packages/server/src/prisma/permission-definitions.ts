@@ -41,7 +41,7 @@ export interface PermissionDefinition {
   name: string;
   category: PermissionCategory;
   description: string;
-  scope: PermissionScope;
+  scope?: PermissionScope;
   sensitiveField?: SensitiveField; // for field-level permissions
 }
 
@@ -49,6 +49,7 @@ export interface PermissionDefinition {
 // PERMISSION BUILDER HELPERS
 // ==========================================
 
+// Builds a string: "category:action" or "category:action:scope"
 function buildPermissionName(
   category: PermissionCategory,
   action: PermissionAction,
