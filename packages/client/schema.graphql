@@ -20,7 +20,7 @@ type AuthenticatedViewerUnreadMessagesConnection {
 
 type AuthenticatedViewerUnreadMessagesConnectionEdge {
   cursor: String!
-  node: MessageBase
+  node: Message
 }
 
 type CreateUserResult {
@@ -45,21 +45,12 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
-type DirectMessage implements MessageBase {
-  content: String
-  createdAt: DateTime
+type DirectMessage implements Node {
   hasReplies: Boolean
-  id: ID
-  isRead: Boolean
-  readAt: DateTime
-  receiver: User
+  id: ID!
   recentReply(after: DateTime!): String
-  replies: [MessageBase!]
-  repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageBaseRepliesConnectionSimpleConnection
+  replies: [Message!]
   replyCount: Int!
-  sender: User
-  senderDisplayName: String
-  senderInfo(includeEmail: Boolean = false): String
 }
 
 type Follow implements Node {
@@ -83,6 +74,22 @@ type FollowResult {
   success: Boolean
 }
 
+type Message implements Node {
+  content: String
+  createdAt: DateTime
+  id: ID!
+  isRead: Boolean
+  readAt: DateTime
+  receiver: User!
+  recentReply(after: DateTime!): String
+  replies: [Message!]
+  repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageRepliesConnectionSimpleConnection
+  replyTo: Message
+  sender: User!
+  senderDisplayName: String
+  senderInfo(includeEmail: Boolean = false): String
+}
+
 type MessageAuthor implements Node {
   avatarUrl: String
   displayName: String
@@ -91,29 +98,6 @@ type MessageAuthor implements Node {
   recentActivityCount: Int!
   totalMessagesSent: Int!
   username: String
-}
-
-interface MessageBase {
-  content: String
-  createdAt: DateTime
-  id: ID
-  isRead: Boolean
-  readAt: DateTime
-  receiver: User
-  repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageBaseRepliesConnectionSimpleConnection
-  sender: User
-  senderDisplayName: String
-  senderInfo(includeEmail: Boolean = false): String
-}
-
-type MessageBaseRepliesConnectionSimpleConnection {
-  edges: [MessageBaseRepliesConnectionSimpleConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-type MessageBaseRepliesConnectionSimpleConnectionEdge {
-  cursor: String!
-  node: MessageBase
 }
 
 type MessageConnection {
@@ -131,13 +115,13 @@ type MessageEdgeNew {
   cursor: String!
   """Whether any message in this connection has replies"""
   hasReplies: Boolean
-  node: MessageBase
+  node: Message
 }
 
 """Message preview in lists"""
 type MessagePreview implements Node {
   createdAt: DateTime
-  fullMessage: MessageBase!
+  fullMessage: Message!
   hasReplies: Boolean
   id: ID!
   isRead: Boolean
@@ -146,11 +130,21 @@ type MessagePreview implements Node {
   sender: UserCard
 }
 
+type MessageRepliesConnectionSimpleConnection {
+  edges: [MessageRepliesConnectionSimpleConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type MessageRepliesConnectionSimpleConnectionEdge {
+  cursor: String!
+  node: Message
+}
+
 type MessageWithAuthor implements Node {
   author: MessageAuthor
   content: String
   createdAt: DateTime
-  fullMessage: MessageBase!
+  fullMessage: Message!
   id: ID!
 }
 
@@ -200,8 +194,8 @@ type PublicProfile implements Node {
 }
 
 type Query {
-  message(id: String!): MessageBase
-  messages: [MessageBase!]
+  message(id: String!): Message
+  messages: [Message!]
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
   publicProfile(userId: ID!): PublicProfile
@@ -222,29 +216,20 @@ type QueryUserFollowingsConnectionEdge {
   node: User
 }
 
-type ReplyMessage implements MessageBase {
-  content: String
-  createdAt: DateTime
-  id: ID
+type ReplyMessage implements Node {
+  id: ID!
   isNestedReply: Boolean
-  isRead: Boolean
-  readAt: DateTime
-  receiver: User
-  repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageBaseRepliesConnectionSimpleConnection
-  replyTo: MessageBase
-  sender: User
-  senderDisplayName: String
-  senderInfo(includeEmail: Boolean = false): String
+  replyTo: Message
 }
 
 type SendMessageResult {
   error: String
-  message: MessageBase
+  message: Message
   success: Boolean
 }
 
 type User implements Node {
-  advancedMessages(after: DateTime, before: DateTime, hasReplies: Boolean, read: Boolean, skip: Int = 0, sortBy: String = "createdAt", sortOrder: String = "desc", take: Int = 20): [MessageBase!]
+  advancedMessages(after: DateTime, before: DateTime, hasReplies: Boolean, read: Boolean, skip: Int = 0, sortBy: String = "createdAt", sortOrder: String = "desc", take: Int = 20): [Message!]
   advancedMessagesConnection(after: String, before: String, first: Int, hasReplies: Boolean, last: Int, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): UserAdvancedMessagesConnection
   asViewer: AuthenticatedViewer!
   avatarUrl: String
@@ -266,18 +251,18 @@ type User implements Node {
   isFollowed(userId: ID!): Boolean
   isFollowing(userId: ID!): Boolean
   lastMessagePreview: String
-  messages(limit: Int = 10, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): [MessageBase!]
+  messages(limit: Int = 10, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): [Message!]
   messagesConnection(after: String, before: String, first: Int, last: Int, search: String, unreadOnly: Boolean = false): MessageConnection
   mutualFollowers: [User!]
   name: String
   profile: Profile
   publicProfile: PublicProfile!
   receivedMessageConnection(after: String, before: String, first: Int, last: Int, unreadOnly: Boolean = false): MessageConnection
-  receivedMessages: [MessageBase!]
+  receivedMessages: [Message!]
   receivedMessagesConnection(after: String, before: String, first: Int, hasReplies: Boolean, last: Int, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): UserReceivedMessagesConnection
-  recentMessages: [MessageBase!]
+  recentMessages: [Message!]
   repliedMessageCount: Int!
-  sentMessages: [MessageBase!]
+  sentMessages: [Message!]
   sentMessagesConnection(after: String, before: String, first: Int, last: Int, search: String, unreadOnly: Boolean = false): MessageConnection
   todayMessageCount: Int!
   totalMessageCount: Int!
@@ -294,7 +279,7 @@ type UserAdvancedMessagesConnection {
 
 type UserAdvancedMessagesConnectionEdge {
   cursor: String!
-  node: MessageBase
+  node: Message
 }
 
 """Minimal user info for cards/lists"""
@@ -340,5 +325,5 @@ type UserReceivedMessagesConnection {
 
 type UserReceivedMessagesConnectionEdge {
   cursor: String!
-  node: MessageBase
+  node: Message
 }

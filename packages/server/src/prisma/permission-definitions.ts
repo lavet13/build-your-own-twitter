@@ -65,12 +65,19 @@ function buildPermissionName(
   return parts.join(":");
 }
 
-function createPermission(
-  category: PermissionCategory,
-  action: PermissionAction,
-  scope: PermissionScope,
-  description: string
-): PermissionDefinition {
+// Creates a PermissionDefinition for a scoped permission (own OR any)
+// e.g. "message:delete:own", "message:delete:any"
+function createPermission({
+  category,
+  action,
+  scope,
+  description,
+}: {
+  category: PermissionCategory;
+  action: PermissionAction;
+  scope?: PermissionScope;
+  description: string;
+}): PermissionDefinition {
   return {
     name: buildPermissionName(category, action, scope),
     category,
@@ -90,7 +97,6 @@ function createActionPermission(
   return {
     name: `${category}:${action}`, // No scope assigned here
     category,
-    scope: PermissionScope.OWN, // Stored as OWN but scope doesn't apply semantically
     description,
   };
 }
@@ -123,8 +129,18 @@ function createResourcePermissions(
   }
 ): PermissionDefinition[] {
   return [
-    createPermission(category, action, PermissionScope.OWN, descriptions.own),
-    createPermission(category, action, PermissionScope.ANY, descriptions.any),
+    createPermission({
+      category,
+      action,
+      scope: PermissionScope.OWN,
+      description: descriptions.own,
+    }),
+    createPermission({
+      category,
+      action,
+      scope: PermissionScope.ANY,
+      description: descriptions.any,
+    }),
   ];
 }
 
@@ -141,14 +157,24 @@ function createTieredPermissions(
   }
 ): PermissionDefinition[] {
   return [
-    createPermission(category, action, PermissionScope.OWN, descriptions.own),
-    createPermission(
+    createPermission({
       category,
       action,
-      PermissionScope.PUBLIC,
-      descriptions.public
-    ),
-    createPermission(category, action, PermissionScope.ANY, descriptions.any),
+      scope: PermissionScope.OWN,
+      description: descriptions.own,
+    }),
+    createPermission({
+      category,
+      action,
+      scope: PermissionScope.PUBLIC,
+      description: descriptions.public,
+    }),
+    createPermission({
+      category,
+      action,
+      scope: PermissionScope.ANY,
+      description: descriptions.any,
+    }),
   ];
 }
 
@@ -430,7 +456,13 @@ const MODERATOR_ROLE_PERMISSIONS = [
   buildPermissionName(PermissionCategory.USER, "ban"),
   buildPermissionName(PermissionCategory.USER, "unban"),
   buildPermissionName(PermissionCategory.USER, "view", PermissionScope.ANY),
-  `${PermissionCategory.USER}:view:email`,
+  createFieldPermission(
+    PermissionCategory.USER,
+    "view",
+    "email",
+    PermissionScope.ANY,
+    ""
+  ).name,
 ];
 
 export const ROLES: RoleDefinition[] = [

@@ -112,37 +112,50 @@ const builder = new SchemaBuilder<PothosTypes>({
       return new GraphQLError("Not authorized");
     },
     authScopes: async (context) => {
-      const currentUser = await getUserWithPermissions(context);
+      // Lazy: only fetches user when a scope checker is actually called
+      let currentUser: UserWithPermissions | null | undefined = undefined;
+
+      const getUser = async (): Promise<UserWithPermissions | null> => {
+        if (currentUser === undefined) {
+          currentUser = await getUserWithPermissions(context);
+        }
+        return currentUser;
+      };
 
       return {
         unauthenticated: true, // basically a constant, right?
-        authenticated: !!currentUser,
+        authenticated: async () => !!(await getUser()),
 
-        hasRole: (roleName) => {
-          if (!currentUser) return false;
-          return hasRole(currentUser, roleName);
+        hasRole: async (roleName) => {
+          const user = await getUser();
+          if (!user) return false;
+          return hasRole(user, roleName);
         },
 
-        hasAnyRole: (roleNames) => {
-          if (!currentUser) return false;
-          return hasAnyRole(currentUser, ...roleNames);
+        hasAnyRole: async (roleNames) => {
+          const user = await getUser();
+          if (!user) return false;
+          return hasAnyRole(user, ...roleNames);
         },
 
-        hasPermission: (permissionName) => {
-          if (!currentUser) return false;
-          return hasPermission(currentUser, permissionName);
+        hasPermission: async (permissionName) => {
+          const user = await getUser();
+          if (!user) return false;
+          return hasPermission(user, permissionName);
         },
 
-        hasPermissions: (permissionNames) => {
-          if (!currentUser) return false;
-          return hasAllPermissions(currentUser, ...permissionNames);
+        hasPermissions: async (permissionNames) => {
+          const user = await getUser();
+          if (!user) return false;
+          return hasAllPermissions(user, ...permissionNames);
         },
 
         canReadMessage: async (messageId) => {
-          if (!currentUser) return false;
+          const user = await getUser();
+          if (!user) return false;
 
           // Check if has global permission
-          if (hasPermission(currentUser, "message:read:any")) {
+          if (hasPermission(user, "message:read:any")) {
             return true;
           }
 
@@ -153,49 +166,51 @@ const builder = new SchemaBuilder<PothosTypes>({
           });
 
           return (
-            message?.senderId === currentUser.id ||
-            message?.receiverId === currentUser.id
+            message?.senderId === user.id || message?.receiverId === user.id
           );
         },
 
         canDeleteMessage: async (messageId) => {
-          if (!currentUser) return false;
+          const user = await getUser();
+          if (!user) return false;
 
           // Admins can delete any message
-          if (hasPermission(currentUser, "message:delete:any")) {
+          if (hasPermission(user, "message:delete:any")) {
             return true;
           }
 
           // Users can only delete their own messages
-          if (hasPermission(currentUser, "message:delete:own")) {
+          if (hasPermission(user, "message:delete:own")) {
             const message = await prisma.message.findUnique({
               where: { id: messageId },
               select: { senderId: true },
             });
-            return message?.senderId === currentUser.id;
+            return message?.senderId === user.id;
           }
 
           return false;
         },
 
-        canEditUser: (userId) => {
-          if (!currentUser) return false;
+        canEditUser: async (userId) => {
+          const user = await getUser();
+          if (!user) return false;
 
           // Admins can edit any user
-          if (hasPermission(currentUser, "user:edit:any")) {
+          if (hasPermission(user, "user:edit:any")) {
             return true;
           }
 
           // Users can edit themselves
-          if (hasPermission(currentUser, "user:edit:own")) {
-            return userId === currentUser.id;
+          if (hasPermission(user, "user:edit:own")) {
+            return userId === user.id;
           }
 
           return false;
         },
 
         isMessageParticipant: async (messageId) => {
-          if (!currentUser) return false;
+          const user = await getUser();
+          if (!user) return false;
 
           const message = await prisma.message.findUnique({
             where: {
@@ -208,8 +223,7 @@ const builder = new SchemaBuilder<PothosTypes>({
           });
 
           return (
-            message?.senderId === currentUser.id ||
-            message?.receiverId === currentUser.id
+            message?.senderId === user.id || message?.receiverId === user.id
           );
         },
       };
@@ -225,8 +239,16 @@ const builder = new SchemaBuilder<PothosTypes>({
 
 builder.addScalarType("DateTime", DateTimeResolver);
 
+/* You will still need to define the `Query` type somewhere in your schema to
+ * add individual query fields */
 builder.queryType({});
+
+/* Same goes for mutation and subscription types  */
 builder.mutationType({});
+
+/* Ensure that the subscribe function is always defined before the resolve
+ * function, otherwise you may run into issues with the resolver arguments not
+ * being typed correctly.*/
 // builder.subscriptionType({});
 
 export { builder };

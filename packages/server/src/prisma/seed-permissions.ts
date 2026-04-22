@@ -109,9 +109,9 @@ export async function seedRoles() {
     console.log(
       `  ✅ Role "${role.name}" with ${permissions.length} permissions`
     );
-
-    console.log(`✅ Seeded ${ROLES.length} roles`);
   }
+
+  console.log(`✅ Seeded ${ROLES.length} roles`);
 }
 
 /**
@@ -146,15 +146,23 @@ export async function grantUserPermissions(
     (p) => ({
       userId,
       permissionId: p.id,
-      grantedById: grantedById || null,
+      grantedById: grantedById ?? null,
       grantedAt: new Date(),
     })
   );
 
-  await prisma.userPermission.createMany({
-    data: userPermissions,
-    skipDuplicates: true,
-  });
+  for (const up of userPermissions) {
+    await prisma.userPermission.upsert({
+      create: up,
+      update: up,
+      where: {
+        userId_permissionId: {
+          userId: up.userId,
+          permissionId: up.permissionId,
+        },
+      },
+    });
+  }
 
   console.log(
     `  ✅ Granted ${permissions.length} direct permissions to user ${userId}`
@@ -261,7 +269,7 @@ export async function getPermissionsGrantedBy(adminId: string) {
     where: {
       grantedById: adminId,
     },
-    include: {
+    select: {
       // the user itself
       user: {
         select: {
@@ -276,7 +284,7 @@ export async function getPermissionsGrantedBy(adminId: string) {
           description: true,
         },
       },
-      // admin who granted the user
+      // the admin who granted this permission
       grantedBy: {
         select: {
           username: true,

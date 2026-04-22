@@ -67,14 +67,14 @@ async function main() {
     case "development": {
       console.log("------Start seeding(OMAYGOT)------");
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       // Step 1: Seed Permissions & Roles
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       await seedAllPermissions();
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       // Step 2: Clear existing data
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       const deleteMessages = prisma.message.deleteMany();
       const deleteFollows = prisma.follow.deleteMany();
       const deleteProfiles = prisma.profile.deleteMany();
@@ -91,9 +91,9 @@ async function main() {
 
       console.log("Cleared existing data");
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       // Step 3: Create users with roles
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       const createdUsers: Prisma.UserModel[] = [];
       for (const u of users) {
         const user = await prisma.user.create({
@@ -103,9 +103,9 @@ async function main() {
         console.log(`Created user with id: ${user.id} (${user.username})`);
       }
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       // Step 4: Create an Admin user
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       const adminUser = await prisma.user.create({
         data: {
           username: "Admin",
@@ -122,9 +122,9 @@ async function main() {
       createdUsers.push(adminUser);
       console.log(`✨ Created ADMIN user: ${adminUser.username}`);
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ==================================================
       // Step 5: Grant direct permissions to specific users
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ==================================================
       //
       // She can delete any message and view emails
 
@@ -149,9 +149,9 @@ async function main() {
         );
       }
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
       // Step 6: Create profiles
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ================================
 
       for (const user of createdUsers) {
         await prisma.profile.create({
@@ -163,9 +163,9 @@ async function main() {
         console.log(`Created profile for ${user.username}`);
       }
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ==============================================
       // Step 7: Create follow relationships & messages
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // ==============================================
       if (createdUsers.length >= 3) {
         const [alice, nilu, bob] = createdUsers;
 
