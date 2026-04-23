@@ -51,6 +51,7 @@ export const FollowNode = builder.prismaNode("Follow", {
       },
     }),
 
+    // @PERF: Potential N+1
     isMutual: t.boolean({
       resolve: async (follow) => {
         const reverseFollow = await prisma.follow.findUnique({
@@ -73,39 +74,58 @@ export const MessageNode = builder.prismaNode("Message", {
 
   select: {
     id: true,
-    isRead: true,
-    createdAt: true,
+    isRead: true, // needed by MessageConnection.unreadCount
+    createdAt: true, // needed by MessageConnection.latestMessageData
+    replyToId: true, // needed to determine if it's a reply
   },
 
   fields: (t) => ({
     content: t.exposeString("content"),
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     isRead: t.exposeBoolean("isRead"),
-    readAt: t.expose("readAt", { type: "DateTime" }),
+    readAt: t.expose("readAt", { type: "DateTime", nullable: true }),
+    sender: t.relation("sender"),
+    receiver: t.relation("receiver"),
 
-    sender: t.relation("sender", { nullable: false }),
-    receiver: t.relation("receiver", { nullable: false }),
+    // Count replies without loading them
+    replyCount: t.relationCount("replies"),
 
-    recentReply: t.string({
-      nullable: true,
-      args: {
-        after: t.arg({ type: "DateTime", required: true }),
-      },
-      select: (args) => ({
-        replies: {
-          take: 1,
-          where: {
-            createdAt: { gt: args.after },
-          },
-          orderBy: { createdAt: "desc" },
+    // Give me the message that this message is replying to; null means it's not a reply itself
+    replyTo: t.relation("replyTo"),
+
+    /*
+       True if this message is a reply to another reply (nested thread)
+       Example:
+       msg-3: replyTo = msg-2, msg-2.replyToId = NULL  → !!null = false → NOT nested
+       msg-4: replyTo = msg-3, msg-3.replyToId = msg-2 → !!msg-2 = true → IS nested
+
+       So msg-3 is a reply but not nested — it replied directly to a top-level
+       message. msg-4 is nested — it replied to something that was itself already a reply.
+    */
+    isNestedReply: t.boolean({
+      select: {
+        // load MY parent message
+        replyTo: {
           select: {
-            content: true,
+            // but only load the parent's replyToId column
+            replyToId: true,
           },
         },
-      }),
-      resolve: (message) => {
-        return message.replies[0]?.content;
       },
+      resolve: (message) => !!message.replyTo?.replyToId,
+    }),
+
+    // Does this message have any children?
+    hasReplies: t.boolean({
+      select: {
+        // load at most one reply, we only need to know IF any exist
+        // take: 1 is important, we don't want to load all replies just to check existence
+        replies: {
+          take: 1,
+          select: { id: true },
+        },
+      },
+      resolve: (message) => message.replies.length > 0,
     }),
 
     senderInfo: t.string({
@@ -150,36 +170,6 @@ export const MessageNode = builder.prismaNode("Message", {
         message.sender.email.split("@")[0],
     }),
 
-    replies: t.relation("replies"),
-    replyTo: t.relation("replyTo"),
-  }),
-});
-
-export const DirectMessage = builder.prismaNode("Message", {
-  id: { field: "id" },
-
-  variant: "DirectMessage",
-
-  select: {
-    id: true,
-    replyToId: true,
-  },
-
-  fields: (t) => ({
-    hasReplies: t.boolean({
-      select: {
-        replies: {
-          select: { id: true },
-          take: 1,
-        },
-      },
-      resolve: (message) => message.replies.length > 0,
-    }),
-
-    replyCount: t.relationCount("replies"),
-
-    replies: t.relation("replies"),
-
     recentReply: t.string({
       nullable: true,
       args: {
@@ -188,46 +178,23 @@ export const DirectMessage = builder.prismaNode("Message", {
       select: (args) => ({
         replies: {
           take: 1,
-          where: {
-            createdAt: { gt: args.after },
-          },
+          where: { createdAt: { gt: args.after } },
           orderBy: { createdAt: "desc" },
-          select: {
-            content: true,
-          },
+          select: { content: true },
         },
       }),
-      resolve: (message) => message.replies[0]?.content,
-    }),
-  }),
-});
-
-export const ReplyMessage = builder.prismaNode("Message", {
-  id: { field: "id" },
-
-  variant: "ReplyMessage",
-
-  select: {
-    id: true,
-    replyToId: true,
-  },
-
-  fields: (t) => ({
-    replyTo: t.relation("replyTo", {
-      nullable: true,
+      resolve: (message) => message.replies[0]?.content ?? null,
     }),
 
-    isNestedReply: t.boolean({
-      select: {
-        replyTo: {
-          select: {
-            replyToId: true,
-          },
-        },
+    // Give me all messages that replied to me, paginated.
+    repliesConnectionSimple: t.relatedConnection("replies", {
+      cursor: "id",
+      args: {
+        oldestFirst: t.arg.boolean({ defaultValue: true }),
       },
-      resolve: (message) => {
-        return !!message.replyTo?.replyToId;
-      },
+      query: (args) => ({
+        orderBy: { createdAt: args.oldestFirst ? "asc" : "desc" },
+      }),
     }),
   }),
 });
@@ -672,7 +639,7 @@ export const MessagePreview = builder.prismaNode("Message", {
     }),
 
     // Link to full message
-    fullMessage: t.variant("Message"),
+    fullMessage: t.variant(MessageNode),
   }),
 });
 
@@ -766,34 +733,7 @@ export const MessageWithAuthor = builder.prismaNode("Message", {
       type: MessageAuthor,
     }),
 
-    fullMessage: t.variant("Message"),
-  }),
-});
-
-const messagesConnectionHelpers = prismaConnectionHelpers(builder, "Message", {
-  cursor: "id",
-
-  args: (t) => ({
-    unreadOnly: t.boolean({ defaultValue: false }),
-    search: t.string(),
-  }),
-
-  select: () => ({
-    id: true,
-    isRead: true,
-  }),
-
-  query: (args) => ({
-    where: {
-      ...(args.unreadOnly && { isRead: true }),
-      ...(args.search && {
-        content: {
-          contains: args.search,
-          mode: "insensitive" as const,
-        },
-      }),
-    },
-    orderBy: { createdAt: "desc" as const },
+    fullMessage: t.variant(MessageNode),
   }),
 });
 
@@ -834,21 +774,7 @@ const MessageEdge = builder.edgeObject({
   type: MessageNode,
   name: "MessageEdgeNew",
 
-  fields: (t) => ({
-    hasReplies: t.boolean({
-      description: "Whether any message in this connection has replies",
-      resolve: async (edge) => {
-        const withReplies = await prisma.message.findFirst({
-          where: {
-            id: edge.node.id,
-            replies: { some: {} },
-          },
-        });
-
-        return !!withReplies;
-      },
-    }),
-  }),
+  fields: () => ({}),
 });
 
 const MessageConnection = builder.connectionObject(
@@ -868,26 +794,6 @@ const MessageConnection = builder.connectionObject(
         },
       }),
 
-      unreadCount: t.int({
-        resolve: (connection) => {
-          // Cast to the resolved type
-          type ResolvedConnection = {
-            edges: Array<{
-              cursor: string;
-              node: typeof MessageNode.$inferType;
-            }>;
-          };
-          const conn = connection as unknown as ResolvedConnection;
-
-          const unread = conn.edges.filter((edge) => {
-            console.log({ edgeNode: edge.node });
-            return !edge.node.isRead;
-          }).length;
-
-          return unread;
-        },
-      }),
-
       hasReplies: t.boolean({
         description: "Whether any message in this connection has replies",
         resolve: async (connection) => {
@@ -901,11 +807,11 @@ const MessageConnection = builder.connectionObject(
 
           const messageIds = conn.edges!.map((e) => e.node.id);
 
+          if (messageIds.length === 0) return false;
+
           const withReplies = await prisma.message.findFirst({
-            where: {
-              id: { in: messageIds },
-              replies: { some: {} },
-            },
+            where: { id: { in: messageIds }, replies: { some: {} } },
+            select: { id: true },
           });
 
           return !!withReplies;
@@ -934,22 +840,6 @@ const MessageConnection = builder.connectionObject(
   },
   MessageEdge
 );
-
-builder.prismaObjectFields("Message", (t) => ({
-  repliesConnectionSimple: t.relatedConnection("replies", {
-    cursor: "id",
-
-    args: {
-      oldestFirst: t.arg.boolean({ defaultValue: true }),
-    },
-
-    query: (args) => ({
-      orderBy: {
-        createdAt: args.oldestFirst ? "asc" : "desc",
-      },
-    }),
-  }),
-}));
 
 builder.prismaObjectFields(UserNode, (t) => ({
   sentMessagesConnection: t.relatedConnection(
@@ -997,32 +887,6 @@ builder.prismaObjectFields(UserNode, (t) => ({
           createdAt: "desc",
         },
       }),
-    },
-    MessageConnection
-  ),
-
-  messagesConnection: t.connection(
-    {
-      type: MessageNode,
-
-      args: messagesConnectionHelpers.getArgs(),
-
-      select: (args, ctx, nestedSelection) => ({
-        sentMessages: messagesConnectionHelpers.getQuery(
-          args,
-          ctx,
-          nestedSelection
-        ),
-      }),
-
-      resolve: (user, args, ctx) => {
-        const connection = messagesConnectionHelpers.resolve(
-          user.sentMessages,
-          args,
-          ctx
-        );
-        return { ...connection };
-      },
     },
     MessageConnection
   ),
@@ -1305,7 +1169,8 @@ builder.prismaObjectFields(UserNode, (t) => ({
 }));
 
 builder.queryFields((t) => ({
-  userFollowings: t.prismaConnection({
+  // "follow suggestions" feature
+  suggestedUsers: t.prismaConnection({
     type: UserNode,
     cursor: "id",
 
@@ -1318,6 +1183,7 @@ builder.queryFields((t) => ({
         ...query,
         where: {
           following: {
+            // users where NO follow exists from userId
             none: {
               followingId: args.userId,
             },

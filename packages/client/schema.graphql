@@ -45,14 +45,6 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
-type DirectMessage implements Node {
-  hasReplies: Boolean
-  id: ID!
-  recentReply(after: DateTime!): String
-  replies: [Message!]
-  replyCount: Int!
-}
-
 type Follow implements Node {
   createdAt: DateTime
   """The user being followed"""
@@ -77,15 +69,17 @@ type FollowResult {
 type Message implements Node {
   content: String
   createdAt: DateTime
+  hasReplies: Boolean
   id: ID!
+  isNestedReply: Boolean
   isRead: Boolean
   readAt: DateTime
-  receiver: User!
+  receiver: User
   recentReply(after: DateTime!): String
-  replies: [Message!]
   repliesConnectionSimple(after: String, before: String, first: Int, last: Int, oldestFirst: Boolean = true): MessageRepliesConnectionSimpleConnection
+  replyCount: Int!
   replyTo: Message
-  sender: User!
+  sender: User
   senderDisplayName: String
   senderInfo(includeEmail: Boolean = false): String
 }
@@ -108,13 +102,10 @@ type MessageConnection {
   pageInfo: PageInfo!
   """Total number of messages"""
   totalCount: Int
-  unreadCount: Int
 }
 
 type MessageEdgeNew {
   cursor: String!
-  """Whether any message in this connection has replies"""
-  hasReplies: Boolean
   node: Message
 }
 
@@ -195,6 +186,7 @@ type PublicProfile implements Node {
 
 type Query {
   message(id: String!): Message
+  messagePreview(id: String!): MessagePreview
   messages: [Message!]
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
@@ -214,12 +206,6 @@ type QueryUserFollowingsConnection {
 type QueryUserFollowingsConnectionEdge {
   cursor: String!
   node: User
-}
-
-type ReplyMessage implements Node {
-  id: ID!
-  isNestedReply: Boolean
-  replyTo: Message
 }
 
 type SendMessageResult {

@@ -177,9 +177,9 @@ model Message {
   receiverId String
   receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Restrict)
 
-  replyToId String?
+  replyToId String? // nullable — null means it's a top-level message
   replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull) // Parent message
-  replies   Message[] @relation("MessageReplies") // child messages
+  replies   Message[] @relation("MessageReplies") // Child messages
 
   isRead Boolean   @default(false)
   readAt DateTime?
