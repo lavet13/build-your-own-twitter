@@ -9,7 +9,10 @@
 * 🟢 You can import this file directly.
 */
 
+export const PermissionStatus = {
+  ACTIVE: 'ACTIVE',
+  REVOKED: 'REVOKED',
+  PENDING: 'PENDING'
+} as const
 
-
-// This file is empty because there are no enums in the schema.
-export {}
+export type PermissionStatus = (typeof PermissionStatus)[keyof typeof PermissionStatus]

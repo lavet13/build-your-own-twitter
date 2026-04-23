@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model Role
- * 
+ * Role is a named group of permissions. A user belongs to exactly one role
  */
 export type RoleModel = runtime.Types.Result.DefaultSelection<Prisma.$RolePayload>
 

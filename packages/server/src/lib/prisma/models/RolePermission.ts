@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model RolePermission
- * 
+ * This is a join table between Role and Permission. Nothing fancy.
  */
 export type RolePermissionModel = runtime.Types.Result.DefaultSelection<Prisma.$RolePermissionPayload>
 

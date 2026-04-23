@@ -1156,6 +1156,7 @@ export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnu
 export const UserPermissionScalarFieldEnum = {
   userId: 'userId',
   permissionId: 'permissionId',
+  status: 'status',
   grantedAt: 'grantedAt',
   grantedById: 'grantedById'
 } as const
@@ -1293,6 +1294,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PermissionStatus'
+ */
+export type EnumPermissionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PermissionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PermissionStatus[]'
+ */
+export type ListEnumPermissionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PermissionStatus[]'>
     
 
 

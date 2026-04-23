@@ -14,7 +14,10 @@ import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model UserPermission
+ * This is the hybrid part. The grantedById field is doing double duty:
  * 
+ * If it has a value → this permission was explicitly granted directly to this user by an admin
+ * If it's null → this permission is explicitly revoked from this user
  */
 export type UserPermissionModel = runtime.Types.Result.DefaultSelection<Prisma.$UserPermissionPayload>
 
@@ -27,6 +30,7 @@ export type AggregateUserPermission = {
 export type UserPermissionMinAggregateOutputType = {
   userId: string | null
   permissionId: string | null
+  status: $Enums.PermissionStatus | null
   grantedAt: Date | null
   grantedById: string | null
 }
@@ -34,6 +38,7 @@ export type UserPermissionMinAggregateOutputType = {
 export type UserPermissionMaxAggregateOutputType = {
   userId: string | null
   permissionId: string | null
+  status: $Enums.PermissionStatus | null
   grantedAt: Date | null
   grantedById: string | null
 }
@@ -41,6 +46,7 @@ export type UserPermissionMaxAggregateOutputType = {
 export type UserPermissionCountAggregateOutputType = {
   userId: number
   permissionId: number
+  status: number
   grantedAt: number
   grantedById: number
   _all: number
@@ -50,6 +56,7 @@ export type UserPermissionCountAggregateOutputType = {
 export type UserPermissionMinAggregateInputType = {
   userId?: true
   permissionId?: true
+  status?: true
   grantedAt?: true
   grantedById?: true
 }
@@ -57,6 +64,7 @@ export type UserPermissionMinAggregateInputType = {
 export type UserPermissionMaxAggregateInputType = {
   userId?: true
   permissionId?: true
+  status?: true
   grantedAt?: true
   grantedById?: true
 }
@@ -64,6 +72,7 @@ export type UserPermissionMaxAggregateInputType = {
 export type UserPermissionCountAggregateInputType = {
   userId?: true
   permissionId?: true
+  status?: true
   grantedAt?: true
   grantedById?: true
   _all?: true
@@ -144,6 +153,7 @@ export type UserPermissionGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 export type UserPermissionGroupByOutputType = {
   userId: string
   permissionId: string
+  status: $Enums.PermissionStatus
   grantedAt: Date
   grantedById: string | null
   _count: UserPermissionCountAggregateOutputType | null
@@ -172,6 +182,7 @@ export type UserPermissionWhereInput = {
   NOT?: Prisma.UserPermissionWhereInput | Prisma.UserPermissionWhereInput[]
   userId?: Prisma.StringFilter<"UserPermission"> | string
   permissionId?: Prisma.StringFilter<"UserPermission"> | string
+  status?: Prisma.EnumPermissionStatusFilter<"UserPermission"> | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFilter<"UserPermission"> | Date | string
   grantedById?: Prisma.StringNullableFilter<"UserPermission"> | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -182,6 +193,7 @@ export type UserPermissionWhereInput = {
 export type UserPermissionOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
   grantedById?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -196,6 +208,7 @@ export type UserPermissionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserPermissionWhereInput | Prisma.UserPermissionWhereInput[]
   userId?: Prisma.StringFilter<"UserPermission"> | string
   permissionId?: Prisma.StringFilter<"UserPermission"> | string
+  status?: Prisma.EnumPermissionStatusFilter<"UserPermission"> | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFilter<"UserPermission"> | Date | string
   grantedById?: Prisma.StringNullableFilter<"UserPermission"> | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -206,6 +219,7 @@ export type UserPermissionWhereUniqueInput = Prisma.AtLeast<{
 export type UserPermissionOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
   grantedById?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserPermissionCountOrderByAggregateInput
@@ -219,11 +233,13 @@ export type UserPermissionScalarWhereWithAggregatesInput = {
   NOT?: Prisma.UserPermissionScalarWhereWithAggregatesInput | Prisma.UserPermissionScalarWhereWithAggregatesInput[]
   userId?: Prisma.StringWithAggregatesFilter<"UserPermission"> | string
   permissionId?: Prisma.StringWithAggregatesFilter<"UserPermission"> | string
+  status?: Prisma.EnumPermissionStatusWithAggregatesFilter<"UserPermission"> | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeWithAggregatesFilter<"UserPermission"> | Date | string
   grantedById?: Prisma.StringNullableWithAggregatesFilter<"UserPermission"> | string | null
 }
 
 export type UserPermissionCreateInput = {
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutDirectPermissionsInput
   permission: Prisma.PermissionCreateNestedOneWithoutUsersInput
@@ -233,11 +249,13 @@ export type UserPermissionCreateInput = {
 export type UserPermissionUncheckedCreateInput = {
   userId: string
   permissionId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   grantedById?: string | null
 }
 
 export type UserPermissionUpdateInput = {
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutDirectPermissionsNestedInput
   permission?: Prisma.PermissionUpdateOneRequiredWithoutUsersNestedInput
@@ -247,6 +265,7 @@ export type UserPermissionUpdateInput = {
 export type UserPermissionUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -254,17 +273,20 @@ export type UserPermissionUncheckedUpdateInput = {
 export type UserPermissionCreateManyInput = {
   userId: string
   permissionId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   grantedById?: string | null
 }
 
 export type UserPermissionUpdateManyMutationInput = {
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserPermissionUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -287,6 +309,7 @@ export type UserPermissionUserIdPermissionIdCompoundUniqueInput = {
 export type UserPermissionCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
   grantedById?: Prisma.SortOrder
 }
@@ -294,6 +317,7 @@ export type UserPermissionCountOrderByAggregateInput = {
 export type UserPermissionMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
   grantedById?: Prisma.SortOrder
 }
@@ -301,6 +325,7 @@ export type UserPermissionMaxOrderByAggregateInput = {
 export type UserPermissionMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   permissionId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   grantedAt?: Prisma.SortOrder
   grantedById?: Prisma.SortOrder
 }
@@ -345,6 +370,10 @@ export type UserPermissionUncheckedUpdateManyWithoutPermissionNestedInput = {
   update?: Prisma.UserPermissionUpdateWithWhereUniqueWithoutPermissionInput | Prisma.UserPermissionUpdateWithWhereUniqueWithoutPermissionInput[]
   updateMany?: Prisma.UserPermissionUpdateManyWithWhereWithoutPermissionInput | Prisma.UserPermissionUpdateManyWithWhereWithoutPermissionInput[]
   deleteMany?: Prisma.UserPermissionScalarWhereInput | Prisma.UserPermissionScalarWhereInput[]
+}
+
+export type EnumPermissionStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PermissionStatus
 }
 
 export type UserPermissionCreateNestedManyWithoutUserInput = {
@@ -432,6 +461,7 @@ export type UserPermissionUncheckedUpdateManyWithoutGrantedByNestedInput = {
 }
 
 export type UserPermissionCreateWithoutPermissionInput = {
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutDirectPermissionsInput
   grantedBy?: Prisma.UserCreateNestedOneWithoutPermissionsGrantedInput
@@ -439,6 +469,7 @@ export type UserPermissionCreateWithoutPermissionInput = {
 
 export type UserPermissionUncheckedCreateWithoutPermissionInput = {
   userId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   grantedById?: string | null
 }
@@ -475,11 +506,13 @@ export type UserPermissionScalarWhereInput = {
   NOT?: Prisma.UserPermissionScalarWhereInput | Prisma.UserPermissionScalarWhereInput[]
   userId?: Prisma.StringFilter<"UserPermission"> | string
   permissionId?: Prisma.StringFilter<"UserPermission"> | string
+  status?: Prisma.EnumPermissionStatusFilter<"UserPermission"> | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFilter<"UserPermission"> | Date | string
   grantedById?: Prisma.StringNullableFilter<"UserPermission"> | string | null
 }
 
 export type UserPermissionCreateWithoutUserInput = {
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   permission: Prisma.PermissionCreateNestedOneWithoutUsersInput
   grantedBy?: Prisma.UserCreateNestedOneWithoutPermissionsGrantedInput
@@ -487,6 +520,7 @@ export type UserPermissionCreateWithoutUserInput = {
 
 export type UserPermissionUncheckedCreateWithoutUserInput = {
   permissionId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   grantedById?: string | null
 }
@@ -502,6 +536,7 @@ export type UserPermissionCreateManyUserInputEnvelope = {
 }
 
 export type UserPermissionCreateWithoutGrantedByInput = {
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutDirectPermissionsInput
   permission: Prisma.PermissionCreateNestedOneWithoutUsersInput
@@ -510,6 +545,7 @@ export type UserPermissionCreateWithoutGrantedByInput = {
 export type UserPermissionUncheckedCreateWithoutGrantedByInput = {
   userId: string
   permissionId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
 }
 
@@ -557,11 +593,13 @@ export type UserPermissionUpdateManyWithWhereWithoutGrantedByInput = {
 
 export type UserPermissionCreateManyPermissionInput = {
   userId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   grantedById?: string | null
 }
 
 export type UserPermissionUpdateWithoutPermissionInput = {
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutDirectPermissionsNestedInput
   grantedBy?: Prisma.UserUpdateOneWithoutPermissionsGrantedNestedInput
@@ -569,18 +607,21 @@ export type UserPermissionUpdateWithoutPermissionInput = {
 
 export type UserPermissionUncheckedUpdateWithoutPermissionInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionUncheckedUpdateManyWithoutPermissionInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionCreateManyUserInput = {
   permissionId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
   grantedById?: string | null
 }
@@ -588,10 +629,12 @@ export type UserPermissionCreateManyUserInput = {
 export type UserPermissionCreateManyGrantedByInput = {
   userId: string
   permissionId: string
+  status?: $Enums.PermissionStatus
   grantedAt?: Date | string
 }
 
 export type UserPermissionUpdateWithoutUserInput = {
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permission?: Prisma.PermissionUpdateOneRequiredWithoutUsersNestedInput
   grantedBy?: Prisma.UserUpdateOneWithoutPermissionsGrantedNestedInput
@@ -599,17 +642,20 @@ export type UserPermissionUpdateWithoutUserInput = {
 
 export type UserPermissionUncheckedUpdateWithoutUserInput = {
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionUncheckedUpdateManyWithoutUserInput = {
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   grantedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserPermissionUpdateWithoutGrantedByInput = {
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutDirectPermissionsNestedInput
   permission?: Prisma.PermissionUpdateOneRequiredWithoutUsersNestedInput
@@ -618,12 +664,14 @@ export type UserPermissionUpdateWithoutGrantedByInput = {
 export type UserPermissionUncheckedUpdateWithoutGrantedByInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserPermissionUncheckedUpdateManyWithoutGrantedByInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   permissionId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPermissionStatusFieldUpdateOperationsInput | $Enums.PermissionStatus
   grantedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -632,6 +680,7 @@ export type UserPermissionUncheckedUpdateManyWithoutGrantedByInput = {
 export type UserPermissionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   userId?: boolean
   permissionId?: boolean
+  status?: boolean
   grantedAt?: boolean
   grantedById?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -642,6 +691,7 @@ export type UserPermissionSelect<ExtArgs extends runtime.Types.Extensions.Intern
 export type UserPermissionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   userId?: boolean
   permissionId?: boolean
+  status?: boolean
   grantedAt?: boolean
   grantedById?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -652,6 +702,7 @@ export type UserPermissionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
 export type UserPermissionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   userId?: boolean
   permissionId?: boolean
+  status?: boolean
   grantedAt?: boolean
   grantedById?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -662,11 +713,12 @@ export type UserPermissionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
 export type UserPermissionSelectScalar = {
   userId?: boolean
   permissionId?: boolean
+  status?: boolean
   grantedAt?: boolean
   grantedById?: boolean
 }
 
-export type UserPermissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "permissionId" | "grantedAt" | "grantedById", ExtArgs["result"]["userPermission"]>
+export type UserPermissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "permissionId" | "status" | "grantedAt" | "grantedById", ExtArgs["result"]["userPermission"]>
 export type UserPermissionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>
@@ -693,6 +745,7 @@ export type $UserPermissionPayload<ExtArgs extends runtime.Types.Extensions.Inte
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     userId: string
     permissionId: string
+    status: $Enums.PermissionStatus
     grantedAt: Date
     grantedById: string | null
   }, ExtArgs["result"]["userPermission"]>
@@ -1123,6 +1176,7 @@ export interface Prisma__UserPermissionClient<T, Null = never, ExtArgs extends r
 export interface UserPermissionFieldRefs {
   readonly userId: Prisma.FieldRef<"UserPermission", 'String'>
   readonly permissionId: Prisma.FieldRef<"UserPermission", 'String'>
+  readonly status: Prisma.FieldRef<"UserPermission", 'PermissionStatus'>
   readonly grantedAt: Prisma.FieldRef<"UserPermission", 'DateTime'>
   readonly grantedById: Prisma.FieldRef<"UserPermission", 'String'>
 }

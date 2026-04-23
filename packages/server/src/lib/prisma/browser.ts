@@ -19,22 +19,27 @@ export * as $Enums from './enums.ts'
 export * from './enums.ts';
 /**
  * Model Permission
- * 
+ * Permission is just a named capability. The name follows a pattern you defined:
+ * category:action:scope (e.g. message:delete:any, user:edit:own). Nothing more
+ * it's a record that says "this capability exists."
  */
 export type Permission = Prisma.PermissionModel
 /**
  * Model Role
- * 
+ * Role is a named group of permissions. A user belongs to exactly one role
  */
 export type Role = Prisma.RoleModel
 /**
  * Model RolePermission
- * 
+ * This is a join table between Role and Permission. Nothing fancy.
  */
 export type RolePermission = Prisma.RolePermissionModel
 /**
  * Model UserPermission
+ * This is the hybrid part. The grantedById field is doing double duty:
  * 
+ * If it has a value → this permission was explicitly granted directly to this user by an admin
+ * If it's null → this permission is explicitly revoked from this user
  */
 export type UserPermission = Prisma.UserPermissionModel
 /**

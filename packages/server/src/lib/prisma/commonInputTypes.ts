@@ -123,6 +123,23 @@ export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeFilter<$PrismaModel>
 }
 
+export type EnumPermissionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionStatus | Prisma.EnumPermissionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionStatusFilter<$PrismaModel> | $Enums.PermissionStatus
+}
+
+export type EnumPermissionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionStatus | Prisma.EnumPermissionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionStatusWithAggregatesFilter<$PrismaModel> | $Enums.PermissionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPermissionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPermissionStatusFilter<$PrismaModel>
+}
+
 export type IntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -295,6 +312,23 @@ export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeFilter<$PrismaModel>
+}
+
+export type NestedEnumPermissionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionStatus | Prisma.EnumPermissionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionStatusFilter<$PrismaModel> | $Enums.PermissionStatus
+}
+
+export type NestedEnumPermissionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionStatus | Prisma.EnumPermissionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionStatus[] | Prisma.ListEnumPermissionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionStatusWithAggregatesFilter<$PrismaModel> | $Enums.PermissionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPermissionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPermissionStatusFilter<$PrismaModel>
 }
 
 export type NestedDateTimeNullableFilter<$PrismaModel = never> = {

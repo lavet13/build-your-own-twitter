@@ -14,7 +14,9 @@ import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model Permission
- * 
+ * Permission is just a named capability. The name follows a pattern you defined:
+ * category:action:scope (e.g. message:delete:any, user:edit:own). Nothing more
+ * it's a record that says "this capability exists."
  */
 export type PermissionModel = runtime.Types.Result.DefaultSelection<Prisma.$PermissionPayload>
 

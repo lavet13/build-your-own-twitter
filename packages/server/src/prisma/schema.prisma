@@ -66,6 +66,12 @@ model RolePermission {
   @@index([permissionId])
 }
 
+enum PermissionStatus {
+  ACTIVE
+  REVOKED
+  PENDING
+}
+
 /// This is the hybrid part. The grantedById field is doing double duty:
 ///
 /// If it has a value → this permission was explicitly granted directly to this user by an admin
@@ -77,8 +83,11 @@ model UserPermission {
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id])
 
+  status PermissionStatus @default(ACTIVE)
+  // ACTIVE = granted, REVOKED = revoked, PENDING = future use
+
   grantedAt   DateTime @default(now())
-  grantedById String? // Admin who granted the permission, NULL means REVOKED; non-null means who granted it
+  grantedById String? // who granted/revoked it — now purely audit info
   grantedBy   User?    @relation("GrantedPermissions", fields: [grantedById], references: [id], onDelete: SetNull)
 
   @@id([userId, permissionId])
