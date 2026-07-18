@@ -146,6 +146,7 @@ export async function grantUserPermissions(
     (p) => ({
       userId,
       permissionId: p.id,
+      status: "ACTIVE",
       grantedById: grantedById ?? null,
       grantedAt: new Date(),
     })
@@ -204,7 +205,7 @@ export async function revokeUserPermissions(
       permissionId: { in: permissions.map((p) => p.id) },
     },
     data: {
-      grantedById: null, // null = revoked
+      status: "REVOKED",
     },
   });
 
@@ -387,7 +388,7 @@ export async function debugUserPermissions(userId: string): Promise<void> {
       },
       directPermissions: {
         where: {
-          grantedById: { not: null }, // Only active permissions
+          status: "ACTIVE", // Only active permissions
         },
         select: {
           permission: {

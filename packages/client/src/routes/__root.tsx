@@ -3,12 +3,16 @@ import {
   HeadContent,
   Outlet,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { NProgress } from "@/components/nprogress";
 
-export const Route = createRootRoute({
+type RouterContext = {
+  isAuthenticated: boolean;
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
 });
 

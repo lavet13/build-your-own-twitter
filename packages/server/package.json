@@ -10,12 +10,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-
     "db:migrate": "npx prisma migrate dev",
     "db:reset": "npx prisma migrate reset",
     "db:studio": "npx prisma studio",
     "db:seed": "npx prisma db seed -- --environment development",
-
     "db:permissions": "tsx ./src/prisma/debug-permissions.ts",
     "db:permissions:stats": "tsx ./src/prisma/debug-permissions.ts --stats",
     "db:permissions:registry": "tsx ./src/prisma/debug-permissions.ts --registry",
@@ -32,7 +30,6 @@
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "prettier": "^3.6.2",
-    "prisma": "^6.19.0",
     "terser": "^5.44.1",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
@@ -41,13 +38,14 @@
   },
   "dependencies": {
     "@graphql-yoga/plugin-disable-introspection": "^2.17.2",
+    "@node-rs/argon2": "^2.0.2",
     "@pothos/core": "^4.10.0",
     "@pothos/plugin-mocks": "^4.1.2",
-    "@pothos/plugin-prisma": "^4.12.0",
+    "@pothos/plugin-prisma": "^4.14.3",
     "@pothos/plugin-relay": "^4.6.2",
     "@pothos/plugin-scope-auth": "^4.1.6",
-    "@prisma/client": "^6.19.0",
-    "@prisma/extension-accelerate": "^2.0.2",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "@whatwg-node/server-plugin-cookies": "^1.0.5",
     "dotenv": "^17.2.3",
     "dotenv-expand": "^12.0.3",
@@ -58,7 +56,7 @@
     "jose": "^6.1.3",
     "jsonwebtoken": "^9.0.3",
     "ms": "^2.1.3",
-    "prisma": "^6.19.0",
+    "prisma": "^7.8.0",
     "srvx": "^0.9.5",
     "ws": "^8.18.3"
   }

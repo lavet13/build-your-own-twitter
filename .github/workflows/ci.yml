@@ -1,0 +1,95 @@
+name: Deploy to VPS
+
+# Disabled until VPS is purchased.
+# To re-enable: change 'workflow_dispatch' back to:
+#   push:
+#     branches: [main]
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # Run relay compiler before building —
+      # the build will fail if __generated__ files are missing or stale
+      - name: Compile Relay
+        run: yarn relay
+
+      - name: Build client
+        run: yarn build:client
+        # VITE_API_URL and VITE_WS_URL are read from .env.production
+        # automatically by Vite during build — no env vars needed here
+
+      # Copy the built client dist to the VPS.
+      # nginx serves this directory as static files.
+      - name: Copy built client to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "packages/client/dist"
+          target: "/app"
+
+      # Copy the production env file to the VPS.
+      # This is not committed to git — it lives only in GitHub secrets.
+      - name: Copy production env to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Write the production env file from the secret.
+            # The server container reads this at startup.
+            cat > /app/packages/server/.env.production << 'EOF'
+            ${{ secrets.PRODUCTION_ENV }}
+            EOF
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /app
+
+            # Pull latest code
+            git pull origin main
+
+            # Rebuild and restart using both compose files.
+            # --no-deps on server: don't restart postgres unnecessarily
+            # unless its config changed.
+            docker compose \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              up -d --build --no-deps server nginx
+
+            # Run any pending migrations inside the server container.
+            # The container uses .env.production so it connects via postgres:5432.
+            docker compose \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              exec server npx prisma migrate deploy
+
+            # Reload nginx config without downtime
+            docker compose \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              exec nginx nginx -s reload

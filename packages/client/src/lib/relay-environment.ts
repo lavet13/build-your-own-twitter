@@ -11,11 +11,16 @@ import {
   type Variables,
 } from "relay-runtime";
 
+// Vite replaces import.meta.env.VITE_API_URL at build time.
+// In dev: falls back to localhost.
+// In prod CI: set via environment variable in the build step.
+
 // HTTP endpoint for queries and mutations
-const HTTP_ENDPOINT = "http://localhost:4000/graphql";
+const HTTP_ENDPOINT = import.meta.env.VITE_API_URL ?? "http://localhost:4000/graphql";
+const WS_ENDPOINT = import.meta.env.VITE_API_URL ?? "ws://localhost:4000/graphql";
 
 const wsClient = createWSClient({
-  url: "ws://localhost:4000/graphql",
+  url: WS_ENDPOINT,
 });
 
 const fetchQuery: FetchFunction = async (request, variables) => {
@@ -24,6 +29,7 @@ const fetchQuery: FetchFunction = async (request, variables) => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({
       query: request.text,
       variables,

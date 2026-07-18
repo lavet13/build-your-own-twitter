@@ -7,6 +7,8 @@ import { useTheme } from "@/hooks/use-theme";
 import type { FC } from "react";
 import { environment } from "@/lib/relay-environment";
 import { RelayEnvironmentProvider } from "react-relay";
+import { Provider } from "jotai";
+import { store } from "@/lib/store";
 
 export const App: FC = () => {
   const { resolvedTheme } = useTheme();
@@ -16,11 +18,13 @@ export const App: FC = () => {
       appearance={resolvedTheme}
       accentColor="blue"
       grayColor="slate"
-      panelBackground="translucent"
+      panelBackground="solid"
     >
       <TooltipProvider delayDuration={400}>
         <RelayEnvironmentProvider environment={environment}>
-          <RouterProvider router={router} />
+          <Provider store={store}>
+            <RouterProvider router={router} />
+          </Provider>
         </RelayEnvironmentProvider>
       </TooltipProvider>
       <Toaster />

@@ -7,14 +7,18 @@
     ]
   },
   "scripts": {
-    "dev": "docker-compose up -d && turbo dev db:studio",
+    "dev": "yarn docker:up && turbo dev db:studio",
     "build": "turbo build",
+    "build:client": "yarn workspace client build",
     "preview": "turbo preview",
+    "relay": "yarn workspace client relay",
+    "relay:watch": "yarn workspace client relay:watch",
     "db:migrate": "yarn workspace server db:migrate",
     "db:reset": "yarn workspace server db:reset",
     "db:studio": "yarn workspace server db:studio",
     "db:seed": "yarn workspace server db:seed",
     "docker:up": "docker-compose up -d",
+    "docker:prod": "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build",
     "docker:down": "docker-compose down",
     "docker:reset": "docker-compose down -v && docker-compose up -d"
   },

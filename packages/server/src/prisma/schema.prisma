@@ -18,7 +18,6 @@ generator pothos {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 /// Permission is just a named capability. The name follows a pattern you defined:
@@ -96,14 +95,83 @@ model UserPermission {
   @@index([grantedById])
 }
 
+enum AuthProviderType {
+  EMAIL
+  PHONE
+  TELEGRAM
+}
+
+model TelegramVerification {
+  id String @id @default(cuid())
+
+  // The code shown to the user on the website
+  // Short, human-readable: "A4X-K9P"
+  code String @unique
+
+  // Null until the user sends the code to the bot
+  // Once the bot receives it, we store which Telegram user sent it
+  telegramId String?
+
+  // Whether the website has consumed this verification
+  // (exchanged it for a session)
+  confirmed Boolean @default(false)
+
+  // Short TTL - codes expire in 5 minutes
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([code])
+  @@index([expiresAt]) // for cleanup queries
+}
+
+model AuthProvider {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type AuthProviderType
+
+  // What this field means per type:
+  // EMAIL    → normalized email address (lowercase)
+  // PHONE    → E.164 format phone number (+79001234567)
+  // TELEGRAM → Telegram user ID as string ("123456789")
+  //
+  // Uniqueness is enforced per type — same email can't register twice,
+  // but the same string could theoretically be both an email and a phone
+  // (which can't happen in practice, but the constraint is explicit)
+  identifier String
+
+  // Argon2 hash for EMAIL and PHONE providers.
+  // Always null for TELEGRAM — the bot interaction is the credential.
+  credential String?
+
+  // Metadata — useful for display and debugging
+  // For TELEGRAM: we can store first_name, username from the bot message
+  // For EMAIL/PHONE: null
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One account per (type, identifier) pair globally
+  @@unique([type, identifier])
+  @@index([userId])
+  @@index([type, identifier]) // fast lookup during login
+}
+
 model User {
   id          String  @id @default(cuid())
-  email       String  @unique
-  password    String
   username    String? @unique
   displayName String?
 
-  // User belongs to one role
+  // Denormalized email for convenience — kept in sync with EMAIL AuthProvider.
+  // Nullable because Telegram-only users have no email.
+  // Used for display and as a human-readable identifier in admin tools.
+  email String? @unique
+
+  // User belongs to one role(Role-based access control)
   roleId String
   role   Role   @relation(fields: [roleId], references: [id])
 
@@ -111,9 +179,11 @@ model User {
   directPermissions  UserPermission[] @relation("UserPermissions")
   permissionsGranted UserPermission[] @relation("GrantedPermissions")
 
-  refreshTokenVersion Int       @default(1)
+  authProviders       AuthProvider[]
+  refreshTokenVersion Int            @default(1)
   sessions            Session[]
 
+  // Social
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   profile          Profile?
@@ -125,6 +195,7 @@ model User {
   deletedAt DateTime?
 
   @@index([username])
+  @@index([email])
 }
 
 model Session {

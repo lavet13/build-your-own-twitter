@@ -1,9 +1,16 @@
 import { createRouter as reactRouter } from "@tanstack/react-router";
 import { routeTree } from "@/routeTree.gen";
+import { store } from "@/lib/store";
+import { isAuthenticatedAtom } from "@/lib/atoms/auth";
 
 function createRouter() {
   return reactRouter({
-    context: {},
+    context: {
+      // Read from jotai store synchronously — no network call
+      get isAuthenticated() {
+        return store.get(isAuthenticatedAtom);
+      }
+    },
     routeTree,
     scrollRestoration: true,
     notFoundMode: "fuzzy",

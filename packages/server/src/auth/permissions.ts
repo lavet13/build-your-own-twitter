@@ -33,6 +33,7 @@ export type UserWithPermissions = Prisma.UserGetPayload<{
             name: true;
           };
         };
+        status: true;
         grantedBy: true;
         grantedAt: true;
       };
@@ -65,10 +66,7 @@ export async function getUserWithPermissions(
           permissions: {
             select: {
               permission: {
-                select: {
-                  id: true,
-                  name: true,
-                },
+                select: { id: true, name: true },
               },
             },
           },
@@ -77,11 +75,9 @@ export async function getUserWithPermissions(
       directPermissions: {
         select: {
           permission: {
-            select: {
-              id: true,
-              name: true,
-            },
+            select: { id: true, name: true },
           },
+          status: true,
           grantedBy: true,
           grantedAt: true,
         },

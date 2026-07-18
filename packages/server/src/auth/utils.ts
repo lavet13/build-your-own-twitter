@@ -383,20 +383,22 @@ export function getEffectivePermissions(
 ): Set<string> {
   const permissions = new Set<string>();
 
-  // 1. Add all permissions from role
+  // Step 1: add all role permissions
   if (user.role) {
     for (const rp of user.role.permissions) {
       permissions.add(rp.permission.name);
     }
   }
 
-  // 2. Apply user-specific overrides
+  // Step 2: apply direct overrides
   for (const up of user.directPermissions) {
-    if (up.grantedBy) {
-      permissions.add(up.permission.name);
-    } else {
-      permissions.delete(up.permission.name); // Revoke permission
+    if (up.status === "ACTIVE") {
+      permissions.add(up.permission.name); // explicit grant
+    } else if (up.status === "REVOKED") {
+      permissions.delete(up.permission.name); // explicit revoke
     }
+
+    // PENDING — neither grants nor revokes
   }
 
   return permissions;

@@ -185,6 +185,7 @@ type PublicProfile implements Node {
 }
 
 type Query {
+  me: User
   message(id: String!): Message
   messagePreview(id: String!): MessagePreview
   messages: [Message!]
@@ -192,18 +193,18 @@ type Query {
   nodes(ids: [ID!]!): [Node]!
   publicProfile(userId: ID!): PublicProfile
   recentMessagesWithAuthors: [MessageWithAuthor!]
+  suggestedUsers(after: String, before: String, first: Int, last: Int, userId: ID!): QuerySuggestedUsersConnection
   user(id: ID!): User
-  userFollowings(after: String, before: String, first: Int, last: Int, userId: ID!): QueryUserFollowingsConnection
   users: [User!]
   viewer(id: ID!): AuthenticatedViewer
 }
 
-type QueryUserFollowingsConnection {
-  edges: [QueryUserFollowingsConnectionEdge]
+type QuerySuggestedUsersConnection {
+  edges: [QuerySuggestedUsersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-type QueryUserFollowingsConnectionEdge {
+type QuerySuggestedUsersConnectionEdge {
   cursor: String!
   node: User
 }
@@ -238,7 +239,6 @@ type User implements Node {
   isFollowing(userId: ID!): Boolean
   lastMessagePreview: String
   messages(limit: Int = 10, oldestFirst: Boolean = false, search: String, unreadOnly: Boolean = false): [Message!]
-  messagesConnection(after: String, before: String, first: Int, last: Int, search: String, unreadOnly: Boolean = false): MessageConnection
   mutualFollowers: [User!]
   name: String
   profile: Profile

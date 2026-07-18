@@ -1,3 +1,4 @@
+import { verifyAccessToken } from "@/auth/utils";
 import { builder } from "@/builder";
 import { prisma } from "@/db";
 import { Prisma } from "@/lib/prisma/client";
@@ -1169,6 +1170,25 @@ builder.prismaObjectFields(UserNode, (t) => ({
 }));
 
 builder.queryFields((t) => ({
+  me: t.prismaField({
+    type: "User",
+    nullable: true,
+    resolve: async (query, _root, _args, context) => {
+      // // accessToken is already parsed from the cookie in context.ts
+      if (!context.accessToken) return null;
+
+      const payload = verifyAccessToken(context.accessToken);
+      if (!payload) return null;
+
+      return prisma.user.findUniqueOrThrow({
+        ...query,
+        where: {
+          id: payload.userId,
+        },
+      });
+    },
+  }),
+
   // "follow suggestions" feature
   suggestedUsers: t.prismaConnection({
     type: UserNode,
@@ -1422,12 +1442,13 @@ CreateUserResult.implement({
   }),
 });
 
-builder.mutationField("createUser", (t) =>
+builder.mutationField("register", (t) =>
   t.field({
     type: CreateUserResult,
     args: {
-      email: t.arg.string({ required: true }),
+      email: t.arg.string(),
       username: t.arg.string(),
+      password: t.arg.string({ required: true }),
       displayName: t.arg.string(),
     },
 

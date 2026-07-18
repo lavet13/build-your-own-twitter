@@ -13,6 +13,14 @@ import { useAutoRefreshTokens } from "@/plugins/use-auto-refresh-tokens";
 const yoga = createYoga({
   schema: schema,
   context: createContext,
+  cors: {
+    origin:
+      process.env.NODE_ENV === "production"
+        ? `https://${process.env.DOMAIN}`
+        : "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "OPTIONS"],
+  },
   plugins: [
     process.env.NODE_ENV === "production" && useDisableIntrospection(),
     useCookies(),
